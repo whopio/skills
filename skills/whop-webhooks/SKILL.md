@@ -13,7 +13,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Whop Webhooks
@@ -111,10 +111,18 @@ The `Set` stands in for durable storage. In production, record `event.id` in you
 
 ## Verify
 
-1. Expose your local server with [ngrok](https://ngrok.com) or Cloudflare Tunnel; Whop rejects `localhost` and private addresses. Register the tunnel URL.
-2. Send a test event from the webhook's menu in the dashboard, or call `POST /api/v1/webhooks/{id}/test`. Whop returns your server's status and body.
-3. Make a real sandbox purchase with a test card (see `whop-checkout`) and confirm the handler ran once.
-4. Inspect deliveries (kept 30 days) in the dashboard or with `GET /api/v1/webhooks/{id}/deliveries`.
+1. Test the handler locally first, with no tunnel or Whop account. [scripts/send-test-event.mjs](scripts/send-test-event.mjs) (Node 18+, no dependencies) sends Whop's published example payload for an event, signed with your secret the way Whop signs deliveries:
+
+   ```bash
+   node scripts/send-test-event.mjs --url http://localhost:3000/api/webhooks/whop --repeat 2
+   node scripts/send-test-event.mjs --url http://localhost:3000/api/webhooks/whop --tamper
+   ```
+
+   It reads the secret from `WHOP_WEBHOOK_SECRET` (or `--secret`), so use the same value the server has. `--type` picks the event (`--list-types` lists them). The first command passes when every attempt gets a `2xx` within 5 seconds, and your logs should show the work ran once for the two identical deliveries. The second passes when the handler rejects the bad signature.
+2. Expose your local server with [ngrok](https://ngrok.com) or Cloudflare Tunnel; Whop rejects `localhost` and private addresses. Register the tunnel URL.
+3. Send a test event from the webhook's menu in the dashboard, or call `POST /api/v1/webhooks/{id}/test`. Whop returns your server's status and body.
+4. Make a real sandbox purchase with a test card (see `whop-checkout`) and confirm the handler ran once.
+5. Inspect deliveries (kept 30 days) in the dashboard or with `GET /api/v1/webhooks/{id}/deliveries`.
 
 ## Errors
 
@@ -135,3 +143,4 @@ Retries: 12 after the first attempt, at 30s, 2m, 8m, 30m, 1h, 3h, 6h, then every
 - [references/events.md](references/events.md): read when choosing events or typing a payload.
 - [references/verify-without-sdk.md](references/verify-without-sdk.md): read when there's no Whop SDK for the language (Go, Elixir, ...).
 - [references/troubleshooting.md](references/troubleshooting.md): read when deliveries fail or signatures don't verify.
+- [scripts/send-test-event.mjs](scripts/send-test-event.mjs): run to send signed test events to a local handler (see Verify).

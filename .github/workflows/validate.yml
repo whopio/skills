@@ -39,5 +39,10 @@ jobs:
       - name: Type-check snippets against the pinned SDK
         run: npm run -s check:snippets
 
+      - name: Hooks and scripts
+        run: |
+          curl -fsSL https://api.whop.com/api/v1/openapi.json -o "$RUNNER_TEMP/openapi.json"
+          WHOP_OPENAPI_FILE="$RUNNER_TEMP/openapi.json" npm test
+
       - name: Docs links resolve
         run: python3 scripts/check-links.py
