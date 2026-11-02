@@ -288,8 +288,9 @@ def check_mcp_tool_names() -> None:
     if data is None:
         return
     tools = set(data.get("tools", {}))
-    # A token counts as a tool name when its first segment is a tool group.
-    groups = {name.split("_", 1)[0] for name in tools if "_" in name}
+    # A token counts as a tool name when its first segment is a tool group,
+    # including groups the server has since dropped (knownGroups).
+    groups = {name.split("_", 1)[0] for name in tools if "_" in name} | set(data.get("knownGroups", []))
     for mock in sorted((ROOT / "evals").glob("**/mocks/whop/*.md")):
         if "results" not in mock.parts and mock.stem not in tools:
             error(mock, f"mocks MCP tool {mock.stem!r}, which isn't on the plugin's MCP route (scripts/mcp-tools.json)")
