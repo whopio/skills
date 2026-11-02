@@ -93,8 +93,8 @@ The plugin ships more than skills. They are Claude Code features, so they never 
 
 | Path | What | Loaded by |
 |---|---|---|
-| `commands/*.md` | `/whop-developer:<file name>` slash commands (`setup`, `test-webhook`, `audit`). Frontmatter: `description`, optional `argument-hint`; no `name` | Claude Code, Cursor |
-| `subagents/*.md` | Subagents (`whop-integration-reviewer`, `whop-migrator`), listed file by file in `agents` in the Claude and Cursor manifests (Claude Code takes `.md` paths, not a folder). `name` equals the file name; `skills` preloads skills from this repo. Not `agents/`: Gemini CLI and Antigravity always load that folder and print errors for Claude-format agents | Claude Code, Cursor |
+| `commands/*.md` | `/whop-developer:<file name>` slash commands (`setup`, `test-webhook`, `audit`). Frontmatter: `description`, optional `argument-hint`; no `name`. After editing one, run `scripts/build-gemini-commands.py` to regenerate `commands/whop-developer/*.toml` | Claude Code, Cursor, Kimi Code; Gemini CLI through the generated TOML |
+| `subagents/*.md` | Subagents (`whop-integration-reviewer`, `whop-migrator`), listed file by file in `agents` in the Claude and Cursor manifests (Claude Code takes `.md` paths, not a folder) and by folder in the Kimi manifest. `name` equals the file name; `skills` preloads skills from this repo; `tools` uses Claude Code tool names, which Kimi shares. Not `agents/`: Gemini CLI and Antigravity always load that folder and print errors for Claude-format agents | Claude Code, Cursor, Kimi Code |
 | `hooks/claude-hooks.json` | `SessionStart` and `PostToolUse` hooks, declared in `.claude-plugin/plugin.json`. Not named `hooks/hooks.json`, because Cursor auto-loads that path and uses a different hook format | Claude Code |
 | `hooks/*.mjs` | Hook scripts: Node built-ins only, read local files only, exit 0 on any error, print nothing when there is nothing to say | |
 | `skills/<name>/scripts/` | Scripts that belong to one skill (`whop-webhooks/scripts/send-test-event.mjs`). Mention each from its `SKILL.md` | Every agent |
@@ -112,21 +112,29 @@ Rules:
 
 | File | Read by |
 |---|---|
-| `plugin.json` + `mcp.json` | The [Agent Plugins](https://agent-plugins.org) standard: Cursor, Codex (OpenAI metadata under `extensions.com.openai`) |
+| `plugin.json` + `mcp.json` | The [Agent Plugins](https://agent-plugins.org) 1.0 standard. Codex and GitHub Copilot CLI read this pair **first** whenever `plugin.json` carries the Agent Plugins `$schema`, so it must stay spec-valid: the manifest is a closed schema (OpenAI metadata goes under `extensions.com.openai`), and `mcp.json` needs its own `$schema` and `"type": "streamable-http"`. A non-conforming `mcp.json` makes those hosts drop the MCP server silently |
 | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` + `.mcp.json` | Claude Code, `npx plugins`. `plugin.json` also points `hooks` at `hooks/claude-hooks.json` |
 | `.codex-plugin/plugin.json` + `.mcp.json` | Older Codex builds and `npx plugins -t codex`, which otherwise generate a manifest with no branding. Current Codex reads `plugin.json` first. `interface` must equal `plugin.json`'s `extensions.com.openai.interface` |
-| `.cursor-plugin/plugin.json` | Cursor Marketplace |
+| `.cursor-plugin/plugin.json` → `.mcp.json` | Cursor Marketplace. `mcpServers` points at `.mcp.json` explicitly: Cursor's format is Claude's (`"type": "http"`), and Whop's own Cursor plugin ships the same shape |
 | `.grok-plugin/plugin.json` + `.mcp.json` | Grok Build |
-| `gemini-extension.json` | Gemini CLI (MCP inline, as `httpUrl`) |
+| `.kimi-plugin/plugin.json` | Kimi Code. MCP is declared inline, because Kimi doesn't resolve file references. Kimi loads `skills/`, `commands/*.md` and `subagents/*.md` (it accepts Claude-style agent files and uses the same tool names) |
+| `gemini-extension.json` | Gemini CLI (MCP inline, as `httpUrl`). Gemini reads commands only as TOML, so `commands/whop-developer/*.toml` is generated from `commands/*.md` by `scripts/build-gemini-commands.py`; `validate.py` fails when they drift. Gemini has no access to our subagents (they're Claude-format, outside the `agents/` folder Gemini scans), so `/whop-developer:audit` falls back to following `subagents/whop-integration-reviewer.md` |
 
-`.mcp.json` and `mcp.json` must be identical and define one server, `whop`: the official Whop MCP server. It is `https://mcp.whop.com/claude/mcp`, the route without money-out tools, until the hosted server offers a non-admin default on `/mcp`.
+Every host's MCP entry points at the same server: the official Whop MCP server, `https://mcp.whop.com/claude/mcp` (the route without money-out tools, until the hosted server offers a non-admin default on `/mcp`). Each sends `X-Whop-Plugin: skills/<version>` plus a host suffix, so Whop can tell where connections come from: none for `.mcp.json` (Claude Code, Cursor, Grok, older Codex), ` (agent-plugins)` for `mcp.json`, ` (gemini)`, and ` (kimi)`. `scripts/bump-version.py` and `validate.py` share that table.
+
+**Hosts we don't ship to yet**, and why:
+
+- Antigravity: our subagents now sit outside the `agents/` folder it auto-loads, so the blocker is gone, but it still needs a `.antigravity-plugin/plugin.json`, a root `mcp_config.json` (`serverUrl`) and a run of `agy plugin validate --strict`.
+- OpenCode plugins are JavaScript modules rather than manifests. Skills already install with `npx skills add -a opencode`, and the MCP setup is in the README.
+
+Before adding a host, read its loader or its docs for manifest precedence. Several hosts read the root `plugin.json` before their own folder.
 
 ## Checks
 
 ```bash
 python3 scripts/validate.py      # structure, frontmatter, versions, references, banned patterns, commands, agents, hooks
 npm run check:snippets           # type-check TypeScript snippets against the pinned @whop/sdk
-npm test                         # hook scripts and the webhook test script (signed events verified with the SDK's unwrapWebhook)
+npm test                         # hook scripts, the webhook test script, and plugin.json/mcp.json against the official Agent Plugins schemas
 python3 scripts/check-links.py   # every docs.whop.com link in the skills returns 200
 claude plugin validate .         # Claude Code's own manifest, command and agent checks (local; needs the claude CLI)
 ```

@@ -1,12 +1,12 @@
 {
   "name": "whop-developer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with connected accounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs.",
   "mcpServers": {
     "whop": {
       "httpUrl": "https://mcp.whop.com/claude/mcp",
       "headers": {
-        "X-Whop-Plugin": "skills/0.2.0"
+        "X-Whop-Plugin": "skills/0.3.0 (gemini)"
       }
     }
   }
