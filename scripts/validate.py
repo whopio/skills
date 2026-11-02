@@ -290,7 +290,11 @@ def check_mcp_tool_names() -> None:
     tools = set(data.get("tools", {}))
     # A token counts as a tool name when its first segment is a tool group.
     groups = {name.split("_", 1)[0] for name in tools if "_" in name}
+    for mock in sorted((ROOT / "evals").glob("**/mocks/whop/*.md")):
+        if "results" not in mock.parts and mock.stem not in tools:
+            error(mock, f"mocks MCP tool {mock.stem!r}, which isn't on the plugin's MCP route (scripts/mcp-tools.json)")
     files = [*SKILLS_DIR.rglob("*.md"), *COMMANDS_DIR.glob("*.md"), *AGENTS_DIR.glob("*.md"), ROOT / "hooks" / "session-start.mjs"]
+
     for path in files:
         for line_number, line in enumerate(path.read_text().splitlines(), start=1):
             for token in re.findall(r"`([a-z][a-z-]*_[a-z][a-z_-]*)`", line):

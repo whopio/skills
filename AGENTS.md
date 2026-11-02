@@ -42,7 +42,21 @@ The plugin ships the Whop MCP server, and skills tell the agent when to use it. 
 
 `skills/whop-api/references/mcp.md` is the full contract: connecting, `intent`/`intent_id`, prepare-and-confirm, idempotency and error codes. Every other skill has a short `## With the Whop MCP server` section that links to it by skill name.
 
-`scripts/mcp-tools.json` lists every tool on the plugin's route, with its safety flags. `validate.py` fails when a skill, command or subagent names a tool that isn't in it. Refresh it when the server changes, following the steps at the top of `scripts/sync-mcp-tools.py`, and put the source commit in the PR.
+`scripts/mcp-tools.json` lists every tool on the plugin's route, with its safety flags. `validate.py` fails when a skill, command, subagent or eval mock names a tool that isn't in it.
+
+**It refreshes itself.** The `Sync MCP tools` workflow (`.github/workflows/sync-mcp-tools.yml`) runs daily. `whopio/whop-mcp-server` is updated after every production deploy of `mcp.whop.com`, so the workflow follows production. On each run it:
+
+1. Checks out that repo and generates its tool registry.
+2. Runs `scripts/sync-mcp-tools.py`.
+3. When tools were added, removed or re-flagged, or a mock's schema changed, opens or updates one PR on `bot/sync-mcp-tools`. The PR lists the changes and the results of `validate.py` and `npm test`. A server commit with the same tools changes nothing and opens no PR.
+4. When `main` matches the server again, closes that PR.
+
+When a sync PR arrives:
+
+- **Its title says "Action needed".** A skill or eval names a removed tool. Fix the mention in that PR.
+- **It adds tools.** Decide whether a skill should mention them.
+
+Run it by hand from the Actions tab, with `mcp_ref` set to a branch, tag or commit to sync from somewhere else. Running the steps at the top of `scripts/sync-mcp-tools.py` locally does the same.
 
 ## Writing a skill
 
