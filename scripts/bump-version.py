@@ -14,9 +14,17 @@ JSON_FILES = [
     ".codex-plugin/plugin.json",
     ".cursor-plugin/plugin.json",
     ".grok-plugin/plugin.json",
+    ".kimi-plugin/plugin.json",
     "gemini-extension.json",
 ]
-MCP_FILES = [".mcp.json", "mcp.json", "gemini-extension.json"]
+# Where each host reads the whop MCP server, and the X-Whop-Plugin suffix that
+# names the host (keep in sync with MCP_HOST_SUFFIX in validate.py).
+MCP_FILES = {
+    ".mcp.json": "",
+    "mcp.json": " (agent-plugins)",
+    "gemini-extension.json": " (gemini)",
+    ".kimi-plugin/plugin.json": " (kimi)",
+}
 
 
 def update_json(path: Path, mutate) -> None:
@@ -25,8 +33,8 @@ def update_json(path: Path, mutate) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n")
 
 
-def set_mcp_header(data: dict, version: str) -> None:
-    data["mcpServers"]["whop"]["headers"]["X-Whop-Plugin"] = f"skills/{version}"
+def set_mcp_header(data: dict, value: str) -> None:
+    data["mcpServers"]["whop"]["headers"]["X-Whop-Plugin"] = value
 
 
 def main() -> int:
@@ -42,8 +50,8 @@ def main() -> int:
         ROOT / ".claude-plugin/marketplace.json",
         lambda d: [plugin.update(version=version) for plugin in d["plugins"]],
     )
-    for name in MCP_FILES:
-        update_json(ROOT / name, lambda d: set_mcp_header(d, version))
+    for name, suffix in MCP_FILES.items():
+        update_json(ROOT / name, lambda d: set_mcp_header(d, f"skills/{version}{suffix}"))
     for skill_md in sorted((ROOT / "skills").glob("*/SKILL.md")):
         text = skill_md.read_text()
         skill_md.write_text(re.sub(r'(\n  version: )"[^"]*"', rf'\1"{version}"', text, count=1))

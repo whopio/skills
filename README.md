@@ -51,11 +51,40 @@ Both hooks need Node 18+ and do nothing if it's missing. They read local files o
 /plugin install whop-developer@whop-skills
 ```
 
+**GitHub Copilot CLI**
+
+```bash
+copilot plugin marketplace add whopio/skills
+copilot plugin install whop-developer@whop-skills
+```
+
+**Gemini CLI**
+
+```bash
+gemini extensions install https://github.com/whopio/skills
+```
+
+**Kimi Code**: run `/plugins install https://github.com/whopio/skills`, then `/reload`. Sign in to the Whop MCP server with `/mcp-config login` when Kimi asks.
+
 **Cursor, Claude Code, Codex, and other plugin-aware tools** (skills plus the MCP server):
 
 ```bash
 npx plugins add whopio/skills
 ```
+
+### What each tool gets
+
+| Tool | Skills | MCP server | Commands | Subagents | Hooks | Manifest |
+|---|---|---|---|---|---|---|
+| Claude Code | ✓ | ✓ | ✓ | ✓ | ✓ | `.claude-plugin/plugin.json` |
+| Cursor | ✓ | ✓ | ✓ | ✓ | | `.cursor-plugin/plugin.json` |
+| Kimi Code | ✓ | ✓ | ✓ | ✓ | | `.kimi-plugin/plugin.json` |
+| Gemini CLI | ✓ | ✓ | ✓ | | | `gemini-extension.json` |
+| GitHub Copilot CLI and other [Agent Plugins](https://agent-plugins.org) hosts | ✓ | ✓ | | | | `plugin.json` + `mcp.json` |
+| Codex | ✓ | ✓ | | | | `.codex-plugin/plugin.json` |
+| Grok Build | ✓ | ✓ | | | | `.grok-plugin/plugin.json` |
+
+Where a tool has no subagents, `/whop-developer:audit` follows the reviewer's checklist itself.
 
 **Skills only, into any agent** (OpenCode, Claude Code, Cursor, Codex, and [more](https://github.com/vercel-labs/skills)):
 

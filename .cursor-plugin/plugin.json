@@ -2,7 +2,7 @@
   "$schema": "https://cursor.com/schemas/cursor-plugin/plugin.json",
   "name": "whop-developer",
   "displayName": "Whop Developer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with connected accounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server.",
   "author": {
     "name": "Whop"
@@ -26,5 +26,6 @@
     "payouts",
     "marketplace",
     "connected-accounts"
-  ]
+  ],
+  "mcpServers": "./.mcp.json"
 }

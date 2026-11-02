@@ -42,6 +42,7 @@ MANIFESTS = [
     (".codex-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
     (".cursor-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
     (".grok-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
+    (".kimi-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
     ("gemini-extension.json", lambda d: d["version"], lambda d: d["name"]),
 ]
 
@@ -181,6 +182,110 @@ def load_json(path: Path) -> dict | None:
         return None
 
 
+AGENT_PLUGINS_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+AGENT_PLUGINS_MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
+# Agent Plugins 1.0 manifests are closed (spec section 5.2): only these keys.
+AGENT_PLUGINS_KEYS = {"$schema", "name", "version", "description", "author", "homepage", "repository", "license", "keywords", "extensions"}
+# The one MCP entry each host reads, and the X-Whop-Plugin suffix that tells
+# Whop which host a connection came from.
+MCP_HOST_SUFFIX = {
+    ".mcp.json": "",  # Claude Code, Codex, Cursor, Grok
+    "mcp.json": " (agent-plugins)",  # Copilot CLI, VS Code and other Agent Plugins hosts
+    "gemini-extension.json": " (gemini)",
+    ".kimi-plugin/plugin.json": " (kimi)",
+}
+
+
+def plugin_header(version: str, path: str) -> str:
+    return f"skills/{version}{MCP_HOST_SUFFIX[path]}"
+
+
+def check_mcp_configs(version: str) -> None:
+    claude = load_json(ROOT / ".mcp.json")
+    if claude is None:
+        return
+    servers = claude.get("mcpServers", {})
+    if list(servers) != ["whop"]:
+        error(ROOT / ".mcp.json", f"must define exactly one server named 'whop', found {list(servers)}")
+        return
+    url = servers["whop"].get("url")
+    if servers["whop"].get("type") != "http" or not isinstance(url, str) or not url.startswith("https://"):
+        error(ROOT / ".mcp.json", "whop must be {type: http, url: https://...}")
+
+    def expect_server(path: str, server: dict, url_key: str, extra: dict) -> None:
+        if server.get(url_key) != url:
+            error(ROOT / path, f"whop.{url_key} must equal .mcp.json's url {url!r}")
+        if server.get("headers") != {"X-Whop-Plugin": plugin_header(version, path)}:
+            error(ROOT / path, f"whop.headers must be exactly {{'X-Whop-Plugin': {plugin_header(version, path)!r}}}")
+        for key, value in extra.items():
+            if server.get(key) != value:
+                error(ROOT / path, f"whop.{key} must be {value!r}")
+        allowed = {url_key, "headers", *extra}
+        if set(server) - allowed:
+            error(ROOT / path, f"whop has unexpected keys {sorted(set(server) - allowed)}")
+
+    expect_server(".mcp.json", servers["whop"], "url", {"type": "http"})
+
+    # Agent Plugins 1.0 (Copilot CLI, VS Code): closed schema, streamable-http.
+    portable = load_json(ROOT / "mcp.json")
+    if portable is not None:
+        if set(portable) != {"$schema", "mcpServers"} or portable.get("$schema") != AGENT_PLUGINS_MCP_SCHEMA:
+            error(ROOT / "mcp.json", f"must be exactly {{$schema: {AGENT_PLUGINS_MCP_SCHEMA}, mcpServers}} (Agent Plugins 1.0)")
+        portable_servers = portable.get("mcpServers", {})
+        if list(portable_servers) != ["whop"]:
+            error(ROOT / "mcp.json", f"must define exactly one server named 'whop', found {list(portable_servers)}")
+        else:
+            expect_server("mcp.json", portable_servers["whop"], "url", {"type": "streamable-http"})
+
+    gemini = (load_json(ROOT / "gemini-extension.json") or {}).get("mcpServers", {})
+    if list(gemini) != ["whop"]:
+        error(ROOT / "gemini-extension.json", "must define exactly one MCP server named 'whop'")
+    else:
+        expect_server("gemini-extension.json", gemini["whop"], "httpUrl", {})
+
+    kimi = load_json(ROOT / ".kimi-plugin/plugin.json") or {}
+    kimi_servers = kimi.get("mcpServers", {})
+    if not isinstance(kimi_servers, dict) or list(kimi_servers) != ["whop"]:
+        error(ROOT / ".kimi-plugin/plugin.json", "mcpServers must be inline (Kimi doesn't resolve file paths) with one server named 'whop'")
+    else:
+        # Kimi's documented remote form: a url with no `transport` is HTTP.
+        expect_server(".kimi-plugin/plugin.json", kimi_servers["whop"], "url", {})
+    if not re.match(r"^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$", str(kimi.get("name", ""))):
+        error(ROOT / ".kimi-plugin/plugin.json", "name must match Kimi's plugin id pattern")
+    for key in ("skills", "commands", "agents"):
+        value = kimi.get(key)
+        if not isinstance(value, str) or not value.startswith("./") or not (ROOT / value).is_dir():
+            error(ROOT / ".kimi-plugin/plugin.json", f"{key} must be a ./ path to an existing directory")
+
+    root_manifest = load_json(ROOT / "plugin.json") or {}
+    if root_manifest.get("$schema") != AGENT_PLUGINS_PLUGIN_SCHEMA:
+        error(ROOT / "plugin.json", f"$schema must be {AGENT_PLUGINS_PLUGIN_SCHEMA}, matching mcp.json's version")
+    if set(root_manifest) - AGENT_PLUGINS_KEYS:
+        error(ROOT / "plugin.json", f"Agent Plugins 1.0 manifests are closed; remove {sorted(set(root_manifest) - AGENT_PLUGINS_KEYS)}")
+    name = str(root_manifest.get("name", ""))
+    if not re.match(r"^[a-z0-9]([a-z0-9.-]{0,62}[a-z0-9])?$", name) or "--" in name or ".." in name:
+        error(ROOT / "plugin.json", "name breaks the Agent Plugins name rules")
+
+    cursor = load_json(ROOT / ".cursor-plugin/plugin.json") or {}
+    if cursor.get("mcpServers") != "./.mcp.json":
+        error(ROOT / ".cursor-plugin/plugin.json", "mcpServers must be ./.mcp.json (Cursor's format; mcp.json is the Agent Plugins format)")
+
+    # Every host listing shows the same pitch (Gemini's manifest keeps its own shorter one).
+    for path in (".claude-plugin/plugin.json", ".codex-plugin/plugin.json", ".cursor-plugin/plugin.json", ".grok-plugin/plugin.json", ".kimi-plugin/plugin.json"):
+        data = load_json(ROOT / path) or {}
+        if data.get("description") != root_manifest.get("description"):
+            error(ROOT / path, "description must match plugin.json")
+
+
+def check_gemini_commands() -> None:
+    import subprocess
+
+    result = subprocess.run([sys.executable, str(ROOT / "scripts" / "build-gemini-commands.py"), "--check"], capture_output=True, text=True)
+    if result.returncode != 0:
+        for line in result.stdout.strip().splitlines() or ["Gemini commands are out of date"]:
+            error(ROOT / "commands" / "whop-developer", line)
+
+
 def check_manifests(version: str, skill_names: list[str]) -> None:
     for manifest_path, get_version, get_name in MANIFESTS:
         path = ROOT / manifest_path
@@ -197,22 +302,7 @@ def check_manifests(version: str, skill_names: list[str]) -> None:
         if manifest_name != PLUGIN_NAME:
             error(path, f"name {manifest_name!r} != {PLUGIN_NAME!r}")
 
-    claude_mcp, portable_mcp = load_json(ROOT / ".mcp.json"), load_json(ROOT / "mcp.json")
-    if claude_mcp is None or portable_mcp is None:
-        return
-    if claude_mcp != portable_mcp:
-        error(ROOT / "mcp.json", "differs from .mcp.json; every client must get the same servers")
-    servers = claude_mcp.get("mcpServers", {})
-    if list(servers) != ["whop"]:
-        error(ROOT / ".mcp.json", f"must define exactly one server named 'whop', found {list(servers)}")
-        return
-    server = servers["whop"]
-    if server.get("headers", {}).get("X-Whop-Plugin") != f"skills/{version}":
-        error(ROOT / ".mcp.json", f"X-Whop-Plugin header must be 'skills/{version}'")
-    gemini = load_json(ROOT / "gemini-extension.json") or {}
-    gemini_server = gemini.get("mcpServers", {}).get("whop", {})
-    if gemini_server.get("httpUrl") != server.get("url") or gemini_server.get("headers") != server.get("headers"):
-        error(ROOT / "gemini-extension.json", "mcpServers.whop must match .mcp.json (httpUrl = url, same headers)")
+    check_mcp_configs(version)
 
     portable = load_json(ROOT / "plugin.json") or {}
     codex = load_json(ROOT / ".codex-plugin/plugin.json") or {}
@@ -335,6 +425,7 @@ def main() -> int:
     check_manifests(version, skill_names)
     check_patterns(skill_names)
     check_plugin_extras(skill_names)
+    check_gemini_commands()
     check_no_symlinks()
 
     for message in warnings:
