@@ -1,0 +1,5 @@
+interface:
+  display_name: "Whop Platforms"
+  short_description: "Onboard, verify, and take fees for connected accounts"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop-platforms to onboard a new seller as a connected account and send them to identity verification."

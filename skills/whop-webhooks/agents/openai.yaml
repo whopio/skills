@@ -1,0 +1,5 @@
+interface:
+  display_name: "Whop Webhooks"
+  short_description: "Verify and handle Whop webhook events"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop-webhooks to add a verified Whop webhook handler that fulfills orders when a payment succeeds."

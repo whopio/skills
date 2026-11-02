@@ -1,0 +1,5 @@
+interface:
+  display_name: "Whop Payouts"
+  short_description: "Transfer, pay out, and report on Whop balances"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop-payouts to transfer $50 from my platform balance to a connected account with an idempotency key."

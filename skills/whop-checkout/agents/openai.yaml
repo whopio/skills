@@ -1,0 +1,5 @@
+interface:
+  display_name: "Whop Checkout"
+  short_description: "Create Whop prices and take payments with links or Elements"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop-checkout to create a monthly subscription variant and a checkout link, then embed the Whop Checkout element on my page."

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+  "name": "whop-skills",
+  "owner": {
+    "name": "Whop",
+    "url": "https://whop.com"
+  },
+  "metadata": {
+    "description": "Whop developer skills for Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "whop-developer",
+      "source": "./",
+      "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with connected accounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server.",
+      "version": "0.1.0",
+      "category": "development"
+    }
+  ]
+}

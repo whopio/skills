@@ -1,0 +1,26 @@
+{
+  "$schema": "https://cursor.com/schemas/cursor-plugin/plugin.json",
+  "name": "whop-developer",
+  "displayName": "Whop Developer",
+  "version": "0.1.0",
+  "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with connected accounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server.",
+  "author": {
+    "name": "Whop"
+  },
+  "publisher": "Whop",
+  "homepage": "https://docs.whop.com/developer/start",
+  "repository": "https://github.com/whopio/skills",
+  "license": "Apache-2.0",
+  "logo": "assets/icon.svg",
+  "category": "payments",
+  "keywords": [
+    "whop",
+    "payments",
+    "checkout",
+    "webhooks",
+    "subscriptions",
+    "payouts",
+    "marketplace",
+    "connected-accounts"
+  ]
+}
