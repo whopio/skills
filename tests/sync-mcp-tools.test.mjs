@@ -136,3 +136,14 @@ test("eval mock schemas mirror the server, and mocks of missing tools are report
   assert.match(report, /### Eval mocks for tools the server no longer has\n\n- `evals\/case-a\/mocks\/whop\/docs_search\.md`/);
   assert.match(report, /### Eval mock schemas updated/);
 });
+
+test("a tool group stays known after the server drops it, so validate.py still checks its names", () => {
+  const root = skillsRoot();
+  sync(root, fakeServer(), summary(["widgets_get  GET /widgets/{id}  [native]  read_only"]));
+  const { tools } = sync(root, fakeServer({ docs: false }), summary());
+  assert.equal(tools.tools.widgets_get, undefined);
+  assert.equal(tools.tools.docs_search, undefined);
+  assert.ok(tools.knownGroups.includes("widgets"));
+  assert.ok(tools.knownGroups.includes("docs"));
+  assert.ok(!tools.knownGroups.includes("search"), "names without an underscore aren't groups");
+});

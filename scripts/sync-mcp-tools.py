@@ -190,6 +190,10 @@ def write_mock_tools(repo: Path) -> tuple[list[str], list[str]]:
     return changed, orphaned
 
 
+def group(name: str) -> str:
+    return name.split("_", 1)[0]
+
+
 def report(previous: dict, tools: dict, source: str, api_version: str | None, mocks_changed: list[str], orphaned: list[str]) -> str:
     added = sorted(set(tools) - set(previous))
     removed = sorted(set(previous) - set(tools))
@@ -248,12 +252,19 @@ def main() -> int:
     source = f"https://github.com/whopio/whop-mcp-server/tree/{commit}"
     api_version = re.search(r"API version (\S+?),", summary.read_text())
     api_version = api_version.group(1) if api_version else None
-    previous = json.loads(OUTPUT.read_text())["tools"] if OUTPUT.is_file() else {}
+    previous_file = json.loads(OUTPUT.read_text()) if OUTPUT.is_file() else {}
+    previous = previous_file.get("tools", {})
+    # Groups seen in any sync so far. validate.py checks names in these groups,
+    # so a skill still naming a tool from a group the server dropped entirely
+    # (all of docs_*, say) fails instead of slipping through.
+    known_groups = sorted(
+        set(previous_file.get("knownGroups", [])) | {group(n) for n in [*previous, *tools] if "_" in n}
+    )
 
     # Rewrite only when the tool list changed, so a new server commit with the
     # same tools doesn't produce a diff (or a sync PR). `source` is the last
     # commit whose tool list changed.
-    if tools != previous:
+    if tools != previous or known_groups != previous_file.get("knownGroups"):
         OUTPUT.write_text(
             json.dumps(
                 {
@@ -261,6 +272,7 @@ def main() -> int:
                     "source": source,
                     "surface": "claude_directory (https://mcp.whop.com/claude/mcp)",
                     "apiVersion": api_version,
+                    "knownGroups": known_groups,
                     "tools": tools,
                 },
                 indent=2,
