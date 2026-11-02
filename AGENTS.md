@@ -94,7 +94,7 @@ The plugin ships more than skills. They are Claude Code features, so they never 
 | Path | What | Loaded by |
 |---|---|---|
 | `commands/*.md` | `/whop-developer:<file name>` slash commands (`setup`, `test-webhook`, `audit`). Frontmatter: `description`, optional `argument-hint`; no `name` | Claude Code, Cursor |
-| `agents/*.md` | Subagents (`whop-integration-reviewer`, `whop-migrator`). `name` equals the file name; `skills` preloads skills from this repo | Claude Code, Cursor |
+| `subagents/*.md` | Subagents (`whop-integration-reviewer`, `whop-migrator`), listed file by file in `agents` in the Claude and Cursor manifests (Claude Code takes `.md` paths, not a folder). `name` equals the file name; `skills` preloads skills from this repo. Not `agents/`: Gemini CLI and Antigravity always load that folder and print errors for Claude-format agents | Claude Code, Cursor |
 | `hooks/claude-hooks.json` | `SessionStart` and `PostToolUse` hooks, declared in `.claude-plugin/plugin.json`. Not named `hooks/hooks.json`, because Cursor auto-loads that path and uses a different hook format | Claude Code |
 | `hooks/*.mjs` | Hook scripts: Node built-ins only, read local files only, exit 0 on any error, print nothing when there is nothing to say | |
 | `skills/<name>/scripts/` | Scripts that belong to one skill (`whop-webhooks/scripts/send-test-event.mjs`). Mention each from its `SKILL.md` | Every agent |

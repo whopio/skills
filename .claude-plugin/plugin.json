@@ -12,6 +12,10 @@
   "license": "Apache-2.0",
   "icon": "./assets/icon.svg",
   "hooks": "./hooks/claude-hooks.json",
+  "agents": [
+    "./subagents/whop-integration-reviewer.md",
+    "./subagents/whop-migrator.md"
+  ],
   "privacyPolicyUrl": "https://whop.com/privacy",
   "termsOfServiceUrl": "https://whop.com/tos",
   "documentationUrl": "https://docs.whop.com/developer/start",

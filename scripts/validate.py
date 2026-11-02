@@ -28,7 +28,9 @@ BANNED_EXEMPT_PATTERNS_BY_DIR = {
 }
 
 COMMANDS_DIR = ROOT / "commands"
-AGENTS_DIR = ROOT / "agents"
+# Not agents/: Gemini CLI and Antigravity always load that folder and reject
+# Claude-format agent files, so the manifests point here explicitly.
+AGENTS_DIR = ROOT / "subagents"
 CLAUDE_HOOKS = ROOT / "hooks" / "claude-hooks.json"
 AGENT_TOOLS = {"Read", "Grep", "Glob", "Bash", "Edit", "Write", "MultiEdit", "Skill", "WebFetch", "WebSearch", "Agent"}
 
@@ -304,6 +306,12 @@ def check_plugin_extras(skill_names: list[str]) -> None:
     claude_manifest = load_json(ROOT / ".claude-plugin/plugin.json") or {}
     if claude_manifest.get("hooks") != "./hooks/claude-hooks.json":
         error(ROOT / ".claude-plugin/plugin.json", "hooks must point to ./hooks/claude-hooks.json")
+    agent_paths = [f"./subagents/{agent.name}" for agent in agents]
+    for manifest in (".claude-plugin/plugin.json", ".cursor-plugin/plugin.json"):
+        if (load_json(ROOT / manifest) or {}).get("agents") != agent_paths:
+            error(ROOT / manifest, f"agents must list every subagent file: {agent_paths}")
+    if (ROOT / "agents").exists():
+        error(ROOT / "agents", "Gemini CLI and Antigravity auto-load agents/ and reject Claude-format agents; keep them in subagents/")
     if (ROOT / "hooks" / "hooks.json").exists():
         error(ROOT / "hooks" / "hooks.json", "Cursor auto-loads this path with its own hook format; keep Claude hooks in claude-hooks.json")
 

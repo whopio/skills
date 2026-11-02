@@ -12,6 +12,10 @@
   "repository": "https://github.com/whopio/skills",
   "license": "Apache-2.0",
   "logo": "assets/icon.svg",
+  "agents": [
+    "./subagents/whop-integration-reviewer.md",
+    "./subagents/whop-migrator.md"
+  ],
   "category": "payments",
   "keywords": [
     "whop",
