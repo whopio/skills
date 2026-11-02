@@ -18,7 +18,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Whop Platforms
@@ -182,6 +182,13 @@ console.log(checkout.purchase_url);
 `initial_price: 49.0` is $49.00 and the fee is $4.90, so the seller receives $44.10 before Whop's fees. `@whop/sdk` 2.7.0 doesn't type `application_fee_amount` on `variant` yet, hence the widened type; the API accepts it. Send the buyer to `purchase_url`, or embed it (`whop-checkout`).
 
 **Collect on the platform, then transfer.** Take the payment on your own account and move each seller's share with `transfers.create` (`type: "balance"`, amounts in dollars, an idempotency key). That flow lives in `whop-payouts`. More on choosing in [references/collect-payments.md](references/collect-payments.md).
+
+## With the Whop MCP server
+
+The `whop` MCP tools act on the signed-in user's **live** account and can't reach sandbox (`whop-api` covers connecting, `intent`/`intent_id`, and prepare-and-confirm). Its `docs_search` and `docs_query` read the docs pages this skill links. Use the tools to fill in and debug the code, not to replace it:
+
+- Inspect connected accounts: `accounts_get`, `accounts_list`, `verifications_list`, `identity-profiles_get`.
+- `accounts_create` and `account-links_create` exist but create real seller accounts and live onboarding links. Your platform does that per seller with the SDK and its Account API key; through MCP, only when the user asks for a specific account.
 
 ## Verify
 

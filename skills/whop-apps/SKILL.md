@@ -18,7 +18,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Whop Apps
@@ -80,6 +80,14 @@ A Whop app installs into a business's Whop and renders inside an iframe on `whop
 | Experience | Sidebar of a whop, one per experience (`exp_`) | `[experienceId]` | `has_access` |
 | Dashboard | Business dashboard → apps | `[companyId]` (a `biz_` ID) | `access_level === "admin"` |
 | Discover (optional) | Discovery, where users browse content | none | your choice |
+
+## With the Whop MCP server
+
+The `whop` MCP tools act on the signed-in user's **live** account and can't reach sandbox (`whop-api` covers connecting, `intent`/`intent_id`, and prepare-and-confirm). Its `docs_search` and `docs_query` read the docs pages this skill links. Use the tools to fill in and debug the code, not to replace it:
+
+- Inspect the app: `apps_list`, `apps_get`, `apps_logs`, `app-installations_list`, `experiences_list`.
+- Check what a user can reach: `users_access` (the same check as `users.checkAccess`).
+- `apps_deploy`, `app-builds_promote` and `notifications_create` change production. Use them only when the user asks; the normal path is the whop CLI and your app's own server code.
 
 ## Verify the user and check access
 

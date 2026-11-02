@@ -18,7 +18,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Whop Checkout
@@ -182,6 +182,15 @@ export async function POST(request: Request): Promise<Response> {
 ## Save a payment method and charge it later
 
 Mount `<Payments mode="setup" currency="usd">`, create a token, then `setupIntents.create({ account_id, confirmation_token, currency: "usd" })` on the server. Later, charge with `payments.create({ account_id, variant_id, member_id, payment_method_id, off_session: true })`. Full flow, statuses and the hosted alternative are in [references/saved-methods.md](references/saved-methods.md).
+
+## With the Whop MCP server
+
+The `whop` MCP tools act on the signed-in user's **live** account and can't reach sandbox (`whop-api` covers connecting, `intent`/`intent_id`, and prepare-and-confirm). Its `docs_search` and `docs_query` read the docs pages this skill links. Use the tools to fill in and debug the code, not to replace it:
+
+- Get the IDs the checkout needs: `products_list` and `variants_list` (pass `account_id`), `checkout-configurations_list`.
+- Debug a live payment: `payments_get`, `payments_status`, `payments_fees`.
+- Create a product or variant with `products_create` / `variants_create` only when the user wants it in their live account. App code still references or creates them with the SDK, tested in sandbox.
+- `payments_create`, `payments_refund`, `payments_void` and `setup-intents_create` are prepare-and-confirm tools that touch real money: show the preview and wait for the user's yes.
 
 ## Verify
 

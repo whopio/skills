@@ -1,0 +1,65 @@
+{
+  "tools": [
+    {
+      "name": "docs_query",
+      "description": "Run a read-only, shell-style command against a virtual filesystem that holds only the Whop documentation pages. It is not a shell on any real machine. Use ls or tree to explore, rg for exact matches, and head or cat to read a page that docs_search returned (append .mdx to its path). Example: head -100 /developer/guides/ai_and_mcp.mdx. Cite pages at https://docs.whop.com without the .mdx extension.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S",
+            "description": "The command to run, for example `tree / -L 2`, `rg -il \"webhook\" /developer`, or `head -80 /payments/overview.mdx`."
+          }
+        },
+        "required": [
+          "command"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "title": "Read Whop docs"
+      }
+    },
+    {
+      "name": "docs_search",
+      "description": "Search the Whop documentation at docs.whop.com: guides, API reference, webhooks, SDKs, and product help. Returns matching excerpts with page paths and links. Use it for how-to and concept questions, or to learn a field or endpoint before calling an operation tool. Read a full page with docs_query.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S",
+            "description": "What to look for, in plain words."
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "pattern": "\\S",
+            "description": "Restrict results to one documentation version. Omit to search the current docs."
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "title": "Search Whop docs"
+      }
+    }
+  ]
+}

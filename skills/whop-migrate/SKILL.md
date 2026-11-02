@@ -18,7 +18,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Whop Migrate
@@ -147,6 +147,14 @@ for await (const membership of await whop.memberships.list({ variant_id: variant
   console.log(membership.id, membership.user_id);
 }
 ```
+
+## With the Whop MCP server
+
+The `whop` MCP tools act on the signed-in user's **live** account and can't reach sandbox (`whop-api` covers connecting, `intent`/`intent_id`, and prepare-and-confirm). Its `docs_search` and `docs_query` read the docs pages this skill links. Use the tools to fill in and debug the code, not to replace it:
+
+- Find old webhooks before moving the handler: `webhooks_list` shows each webhook's `api_version` (`v2` and `v5` are legacy) and `api_version_date`. Results include `webhook_secret`: never print it.
+- Check the new code against real data: `products_list`, `variants_list`, `memberships_list`, `payments_list`.
+- Moving existing Stripe subscribers is a dashboard migration (Rule 8), not an MCP or API call.
 
 ## Verify
 

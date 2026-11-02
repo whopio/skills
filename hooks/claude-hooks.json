@@ -1,5 +1,5 @@
 {
-  "description": "Whop developer checks: flag stale Whop API names and leaked secrets in edited files, and describe a Whop project's packages at session start.",
+  "description": "Whop developer checks: flag stale Whop API names and leaked secrets in edited files, describe a Whop project's packages at session start, and ask the user before any prepared Whop MCP operation executes.",
   "hooks": {
     "SessionStart": [
       {
@@ -20,6 +20,18 @@
           {
             "type": "command",
             "command": "command -v node >/dev/null 2>&1 && node \"${CLAUDE_PLUGIN_ROOT}/hooks/check-whop-code.mjs\" || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "mcp__(plugin_whop-developer_)?whop__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v node >/dev/null 2>&1 && node \"${CLAUDE_PLUGIN_ROOT}/hooks/confirm-whop-execution.mjs\" || true",
             "timeout": 10
           }
         ]

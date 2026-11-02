@@ -13,7 +13,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Whop Webhooks
@@ -73,6 +73,15 @@ console.log(webhook.webhook_secret);
 ```
 
 `webhook_secret` is returned only once. Store it as `WHOP_WEBHOOK_SECRET` immediately. To receive events for an app's installs, or for connected accounts, see `resource_id` and `child_resource_events` in the [Webhooks API reference](https://docs.whop.com/api-reference/webhooks/webhook.md).
+
+## With the Whop MCP server
+
+The `whop` MCP tools act on the signed-in user's **live** account and can't reach sandbox (`whop-api` covers connecting, `intent`/`intent_id`, and prepare-and-confirm). Its `docs_search` and `docs_query` read the docs pages this skill links. Use the tools to fill in and debug the code, not to replace it:
+
+- See what's registered: `webhooks_list` / `webhooks_get` (URL, events, `enabled`, `api_version`, `api_version_date`, failure counts). Results include `webhook_secret`: never print it or write it to a tracked file.
+- Debug production deliveries: `webhooks_deliveries` lists recent attempts and their status. `webhooks_deliveries-replay` resends one and `webhooks_test` sends a test event; both are prepare-and-confirm and hit the live endpoint.
+- `webhooks_create` makes a real production endpoint. Use it only when the user asks, and put the returned secret straight into the gitignored env file the handler reads.
+- Test the handler code locally with `scripts/send-test-event.mjs` (Verify, step 1) and a sandbox webhook, not through MCP.
 
 ## Verify and handle events
 

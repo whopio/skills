@@ -17,7 +17,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Whop Payouts
@@ -175,6 +175,13 @@ console.log(deposit.methods.card?.payment_id);
 ```
 
 `amount: 1000.0` is $1,000.00 USD. This needs the `payment:charge` scope and a `biz_` destination; a declined charge fails with `400`. Confirm the result with the `payment.succeeded` / `payment.failed` webhooks for that `payment_id`. Without `payment_method_id`, `deposits.create` charges nothing and returns the ways to fund the account instead: a hosted deposit page, bank transfer details and crypto addresses (crypto has a $10 minimum).
+
+## With the Whop MCP server
+
+The `whop` MCP tools act on the signed-in user's **live** account and can't reach sandbox (`whop-api` covers connecting, `intent`/`intent_id`, and prepare-and-confirm). Its `docs_search` and `docs_query` read the docs pages this skill links. Use the tools to fill in and debug the code, not to replace it:
+
+- Read-only through MCP: `payouts_list`, `payouts_get`, `transfers_list`, `transfers_get`, `ledger-accounts_get`, `payout-methods_list`, `accounts_fees_get`.
+- Creating payouts, transfers and deposits isn't available on the plugin's MCP connection. Write that code with the SDK and run it with the user's API key, after confirming the amount, currency and destination (Rule 2). Don't look for a workaround.
 
 ## Verify
 

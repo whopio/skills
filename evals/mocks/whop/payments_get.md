@@ -1,0 +1,1 @@
+{"id": "{{input.id}}", "status": "paid", "substatus": "succeeded", "total": 49.0, "currency": "usd", "refunded_amount": 0.0, "refundable": true, "customer_email": "jordan@example.com", "product": {"id": "prod_3Rf7NpQ1Wd6sKc", "title": "Pro Membership"}, "account_id": "biz_8Kq2mZt4Lr9xYv", "paid_at": "2026-10-28T15:02:11.000Z"}

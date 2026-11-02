@@ -26,6 +26,7 @@ The plugin adds these on top of the skills.
 
 | Command | Does |
 |---|---|
+| `/whop-developer:connect` | Checks the Whop MCP sign-in (user, businesses, live account) and how it differs from the project's own API key and environment |
 | `/whop-developer:setup` | Installs the SDK, adds the env var names, writes a server-only client and proves it works with a real sandbox call |
 | `/whop-developer:test-webhook` | Sends signed test events to your running webhook handler: valid signature, tampered signature, duplicate delivery and the 5-second deadline |
 | `/whop-developer:audit` | Reviews the integration for leaked keys, unverified webhooks, missing idempotency keys, cents-vs-dollars bugs, client-side access checks and stale API names |
@@ -35,12 +36,14 @@ The plugin adds these on top of the skills.
 | `whop-integration-reviewer` | Read-only review with `file:line` findings by severity (used by `/whop-developer:audit`) |
 | `whop-migrator` | Rewrites old Whop code (`@whop/api`, API v2, plans, companies, withdrawals, cents) or a Stripe integration to the current API, and type-checks the result |
 
-Claude Code also runs two hooks:
+Claude Code also runs three hooks:
+
+- **Before a prepared Whop operation executes** (a Whop MCP call carrying `mcp_confirmation_token`: a refund, a cancellation, a deletion, a new webhook), it makes Claude Code ask you, even if you always allow the Whop tools. The model can't treat your original request as the approval. Previews and reads aren't affected.
 
 - **After every file edit**, it checks the lines just written for names the current API replaced (`plans.create`, `new Whop(`, `company_id`, `membership.went_valid`...) and for unsafe code: a Whop key under `NEXT_PUBLIC_` or in a `"use client"` file, a hard-coded `ws_` secret, a parsed webhook body. It tells the agent the fix and the skill to load. Each finding is reported once per session.
 - **At session start**, in a project that already uses Whop, it tells the agent which Whop packages are installed, flags deprecated ones, and explains that the MCP server works on the live account and confirms consequential actions in two steps. Other projects get nothing.
 
-Both hooks need Node 18+ and do nothing if it's missing. They read local files only and never send data anywhere. The webhook test script ships inside the `whop-webhooks` skill, so agents that install only the skills get it too.
+All three need Node 18+ and do nothing if it's missing. They read local files only and never send data anywhere. The webhook test script ships inside the `whop-webhooks` skill, so agents that install only the skills get it too.
 
 ## Install
 
@@ -96,7 +99,7 @@ Add `-a <agent>` to pick the agent, or `--skill whop-checkout` to install one sk
 
 ### Whop MCP server
 
-The plugin installs it for you. To add it by hand:
+One connection covers the API (acting on your live account) and the Whop docs (`docs_search`, `docs_query`), so there's no separate docs server. The plugin installs it for you. To add it by hand:
 
 - Claude Code: `claude mcp add --transport http whop https://mcp.whop.com/mcp`
 - OpenCode: add this to `opencode.json`, then run `opencode mcp auth whop`:

@@ -1,0 +1,504 @@
+{
+  "tools": [
+    {
+      "name": "accounts_list",
+      "description": "Lists accounts visible to the credential. User tokens return the user's business accounts; Account API keys return the requesting account and its connected accounts.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "description": "Return results after this cursor. Use `page_info.end_cursor` from the previous response to fetch the next page.",
+            "type": "string"
+          },
+          "before": {
+            "description": "Return results before this cursor. Use `page_info.start_cursor` from the previous response to fetch the previous page.",
+            "type": "string"
+          },
+          "created_after": {
+            "description": "Return only accounts created after this ISO 8601 timestamp.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "created_before": {
+            "description": "Return only accounts created before this ISO 8601 timestamp.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "direction": {
+            "default": "desc",
+            "description": "Sort direction.",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "type": "string"
+          },
+          "first": {
+            "default": 10,
+            "description": "Number of results to return from the start of the range.",
+            "maximum": 50,
+            "type": "integer"
+          },
+          "last": {
+            "description": "Number of results to return from the end of the range.",
+            "maximum": 50,
+            "type": "integer"
+          },
+          "order": {
+            "default": "created_at",
+            "description": "The field to sort accounts by. `volume` requires `stats:read` on the parent account.",
+            "enum": [
+              "created_at",
+              "volume"
+            ],
+            "type": "string"
+          },
+          "owner_id": {
+            "description": "Return only accounts owned by this user (`user_...`), the account's `owner`. Cannot be combined with `parent_account_id`.",
+            "type": "string"
+          },
+          "parent_account_id": {
+            "description": "For platforms: the parent account ID whose direct connected accounts to return. Requires `payout:account:read` on the parent account.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Free-text filter on account title or ID. `%` and `_` match literally.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Return only accounts with this status: `active` (includes accounts that have not entered payments review) or `suspended`.",
+            "enum": [
+              "active",
+              "suspended"
+            ],
+            "type": "string"
+          },
+          "volume_max": {
+            "description": "Return only accounts whose lifetime USD volume is at most this value. Requires `stats:read` on the parent account.",
+            "type": "number"
+          },
+          "volume_min": {
+            "description": "Return only accounts whose lifetime USD volume is at least this value. Requires `stats:read` on the parent account.",
+            "type": "number"
+          },
+          "intent": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "The original user request that led to this tool call. Copy it verbatim when available."
+          },
+          "intent_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+            "description": "A UUID for the user turn that caused this call. Generate it once per user message and reuse it for every tool call made to fulfill that message. Never derive it from the intent text."
+          }
+        },
+        "required": [
+          "intent",
+          "intent_id"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List Accounts"
+      }
+    },
+    {
+      "name": "connection_status",
+      "description": "Returns safe diagnostics for this connection: authenticated identity, selected account, permission profile, scopes, tool coverage, and build metadata. Never returns credentials.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "payments_get",
+      "description": "Returns one payment, including every purchased line item with its quantity and subtotal. Related records are ids — resolve a variant, membership, member or shipment on its own endpoint, and list this payment's refunds, disputes or Resolution Center cases with `?payment_id=`.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The payment, prefixed `pay_`.",
+            "type": "string"
+          },
+          "intent": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "The original user request that led to this tool call. Copy it verbatim when available."
+          },
+          "intent_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+            "description": "A UUID for the user turn that caused this call. Generate it once per user message and reuse it for every tool call made to fulfill that message. Never derive it from the intent text."
+          }
+        },
+        "required": [
+          "id",
+          "intent",
+          "intent_id"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Retrieve Payment"
+      }
+    },
+    {
+      "name": "payments_refund",
+      "description": "Refunds all or part of a payment through the processor that charged it, and updates its membership to match. The buyer is emailed, the affiliate commission on the payment is clawed back, and any open Resolution Center case on the payment is closed.\n\nTwo-step tool. Without mcp_confirmation_token, calling it is a SAFE PREVIEW: nothing executes, no money moves, no data changes — it returns exactly what would happen plus a confirmation token. Show that preview to the user. Executing is the user's decision, not yours: call again with the token once they approve, in the moment or through standing permission they have given you.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The payment to refund, prefixed `pay_`.",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Your own key-value data to attach to the refund, returned on it and on its `refund.created` and `refund.updated` webhooks. At most 50 keys; keys up to 100 characters and values up to 500.",
+            "example": {
+              "refund_id": "ref_8f2k1"
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "partial_amount": {
+            "description": "The amount to refund, stated in this payment's `currency` like every other amount on it. When the buyer was billed in a different currency, it is converted at the payment's own exchange rate before the refund is issued. An amount that covers everything still refundable refunds the rest of the payment — omit it to refund the rest without having to work out what that is.",
+            "example": 49,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "mcp_confirmation_token": {
+            "type": "string",
+            "description": "Leave unset on the first call to prepare this operation and receive a confirmation token. Pass the token back, after the user approves, to execute."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "description": "Caller-chosen stable retry key. Required when executing with a confirmation token; reuse the same key when retrying. The native API replays completed requests and rejects requests still in flight."
+          },
+          "intent": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "The original user request that led to this tool call. Copy it verbatim when available."
+          },
+          "intent_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+            "description": "A UUID for the user turn that caused this call. Generate it once per user message and reuse it for every tool call made to fulfill that message. Never derive it from the intent text."
+          }
+        },
+        "required": [
+          "id",
+          "intent",
+          "intent_id"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Refund Payment"
+      }
+    },
+    {
+      "name": "products_list",
+      "description": "Lists an account's products, or searches the public marketplace when you omit `account_id`.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "access_pass_types": {
+            "description": "Filter to only products matching these types.",
+            "items": {
+              "example": "regular",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "account_id": {
+            "description": "The unique identifier of the account to list products for. Omit to search the public marketplace.",
+            "type": "string"
+          },
+          "after": {
+            "description": "Return results after this cursor. Use `page_info.end_cursor` from the previous response to fetch the next page.",
+            "type": "string"
+          },
+          "before": {
+            "description": "Return results before this cursor. Use `page_info.start_cursor` from the previous response to fetch the previous page.",
+            "type": "string"
+          },
+          "billing_types": {
+            "description": "Filter to products with a buyable variant of these billing models, such as `one_time` or `renewal`.",
+            "items": {
+              "enum": [
+                "renewal",
+                "one_time"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "created_after": {
+            "description": "Only return products created after this ISO 8601 timestamp.",
+            "type": "string"
+          },
+          "created_before": {
+            "description": "Only return products created before this ISO 8601 timestamp.",
+            "type": "string"
+          },
+          "direction": {
+            "description": "The sort direction for results. Defaults to descending.",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "type": "string"
+          },
+          "first": {
+            "default": 20,
+            "description": "Number of results to return from the start of the range.",
+            "maximum": 100,
+            "type": "integer"
+          },
+          "labels": {
+            "description": "Filter to only products carrying all of these labels. Labels are matched lowercased.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "last": {
+            "description": "Number of results to return from the end of the range.",
+            "maximum": 100,
+            "type": "integer"
+          },
+          "marketplace_category_route": {
+            "description": "Only return marketplace products assigned to this category route, such as `trading`.",
+            "type": "string"
+          },
+          "order": {
+            "description": "The field to sort results by. Account lists default to `created_at`. Marketplace lists default to `discoverable_at` and accept `created_at` or `discoverable_at`. Cannot be combined with `query`.",
+            "type": "string"
+          },
+          "price_maximum": {
+            "description": "Only return products whose advertised buyable variant has a displayed price of at most this amount. Recurring variants use renewal price.",
+            "type": "number"
+          },
+          "price_minimum": {
+            "description": "Only return products whose advertised buyable variant has a displayed price of at least this amount. Recurring variants use renewal price.",
+            "type": "number"
+          },
+          "query": {
+            "description": "Filters products by text. The public marketplace list searches product title, account name, headline and description, ranking products that match every word first and the closest partial matches after them; an account's own list is a plain substring match over title, headline and description. Omit to browse by recency.",
+            "type": "string"
+          },
+          "visibilities": {
+            "description": "Filter to only products matching these visibility states. Ignored on the public marketplace list, which only returns visible products.",
+            "items": {
+              "example": "visible",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "intent": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "The original user request that led to this tool call. Copy it verbatim when available."
+          },
+          "intent_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+            "description": "A UUID for the user turn that caused this call. Generate it once per user message and reuse it for every tool call made to fulfill that message. Never derive it from the intent text."
+          }
+        },
+        "required": [
+          "intent",
+          "intent_id"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List Products"
+      }
+    },
+    {
+      "name": "variants_list",
+      "description": "Lists an account's variants, leaving out variants generated for a legacy invoice; retrieve one of those by ID. To list a product's public, buyable variants without authentication, omit `account_id` and pass `product_ids`.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "account_id": {
+            "description": "The unique identifier of the account to list variants for. Required unless `product_ids` is provided for a public product-variant read.",
+            "type": "string"
+          },
+          "after": {
+            "description": "Return results after this cursor. Use `page_info.end_cursor` from the previous response to fetch the next page.",
+            "type": "string"
+          },
+          "before": {
+            "description": "Return results before this cursor. Use `page_info.start_cursor` from the previous response to fetch the previous page.",
+            "type": "string"
+          },
+          "billing_types": {
+            "description": "Filter to only variants matching these billing types.",
+            "items": {
+              "example": "renewal",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "created_after": {
+            "description": "Only return variants created after this timestamp.",
+            "type": "string"
+          },
+          "created_before": {
+            "description": "Only return variants created before this timestamp.",
+            "type": "string"
+          },
+          "direction": {
+            "description": "The sort direction for results. Defaults to descending.",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "type": "string"
+          },
+          "first": {
+            "default": 20,
+            "description": "Number of results to return from the start of the range.",
+            "maximum": 100,
+            "type": "integer"
+          },
+          "ip_address": {
+            "description": "The buyer's IP address, when your server reads on their behalf. Needs an API key; any other caller is placed by its own request. Where `presentment_currency` `auto` finds the buyer's local currency, and where a payment method must be able to collect it.",
+            "example": "203.0.113.7",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last": {
+            "description": "Number of results to return from the end of the range.",
+            "maximum": 100,
+            "type": "integer"
+          },
+          "order": {
+            "description": "The field to sort results by. Defaults to created_at.",
+            "enum": [
+              "id",
+              "active_members_count",
+              "created_at",
+              "internal_notes",
+              "expiration_days"
+            ],
+            "type": "string"
+          },
+          "presentment_country": {
+            "description": "The country to state each variant's prices for, as an ISO 3166-1 alpha-2 code such as `JP`, when the buyer chose one: a store's country picker. States them in the currency `auto` would for a buyer in that country, so send it instead of `presentment_currency`, never with it. Whether a payment method can collect that currency is still judged where the buyer is: by `ip_address`, else by the request's own IP address. A country Whop has no currency for is ignored, and the prices are stated as `auto` would state them.",
+            "example": "JP",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "presentment_currency": {
+            "description": "The currency to state each variant's prices in. Omit it, or send null, for each variant's own currency. `auto` states them in the currency of the country Whop places the buyer in: by `ip_address` when your server sends one, and by the request's own IP address otherwise. To choose that country instead, send `presentment_country` in place of this. A three-letter ISO 4217 code, such as `eur`, states them in that currency. A variant converts only where a payment quote for it would be priced in that currency, and stays in its own currency otherwise: a renewing variant, one with adaptive pricing off, a currency no payment method can collect, or `auto` for a buyer Whop cannot place in a country. Converted prices are an estimate at the current exchange rate. Nothing is held: the payment quote the buyer pays from fixes the rate.",
+            "example": "auto",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "product_ids": {
+            "description": "Filter to only variants belonging to these product identifiers. When `account_id` is omitted, this is required and the response is publicly readable: only visible, non-invoice variants are returned.",
+            "items": {
+              "example": "prod_xxxxxxxxxxxxxx",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "release_methods": {
+            "description": "Filter to only variants matching these release methods.",
+            "items": {
+              "example": "buy_now",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "visibilities": {
+            "description": "Filter to only variants matching these visibility states.",
+            "items": {
+              "example": "visible",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "intent": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "The original user request that led to this tool call. Copy it verbatim when available."
+          },
+          "intent_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+            "description": "A UUID for the user turn that caused this call. Generate it once per user message and reuse it for every tool call made to fulfill that message. Never derive it from the intent text."
+          }
+        },
+        "required": [
+          "intent",
+          "intent_id"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List Variants"
+      }
+    }
+  ]
+}

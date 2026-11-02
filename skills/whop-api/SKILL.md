@@ -1,15 +1,15 @@
 ---
 name: whop-api
 description: >-
-  Set up and call the Whop API: pick the right credential (API key,
-  account-scoped user token, account access token, iframe user token, OAuth),
-  configure @whop/sdk in TypeScript, Python or Ruby for sandbox or production,
-  read IDs and dollar amounts, pin API versions, send idempotency keys,
-  paginate lists, handle errors, and look up live docs. Use when: "set up the
-  Whop SDK", "Whop API key", "use the Whop sandbox", "which Whop token do I
-  need", "Whop API returns 401", "Whop 403 forbidden", "Api-Version-Date",
-  "paginate Whop results", "Whop idempotency key", "what is a biz_ / plan_ ID".
-  Chain with: whop-checkout to take a payment, whop-webhooks to receive events,
+  Set up and call the Whop API: pick the credential (API key, user or account
+  token, iframe token, OAuth), configure @whop/sdk in TypeScript, Python or Ruby
+  for sandbox or production, read IDs and dollar amounts, pin versions, send
+  idempotency keys, paginate, handle errors, look up live docs, and use the
+  Whop MCP server's tools safely. Use when: "set up the Whop SDK", "Whop API
+  key", "use the Whop sandbox", "which Whop token do I need", "Whop API returns
+  401", "Whop 403 forbidden", "Api-Version-Date", "Whop idempotency key", "what
+  is a biz_ / plan_ ID", "Whop MCP", "find my product ID". Chain with:
+  whop-checkout to take a payment, whop-webhooks to receive events,
   whop-billing for memberships after the sale. NOT for: taking payments (use
   whop-checkout), webhook handlers (use whop-webhooks), payouts and transfers
   (use whop-payouts), connected accounts (use whop-platforms), apps inside
@@ -18,7 +18,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Whop API
@@ -44,6 +44,7 @@ The foundation for every Whop integration: which credential to use, how to set u
 8. **Don't retry `400`, `401`, `403`, `404` or `422` unchanged.** Fix the request first. With an idempotency key, a `4xx` is replayed for 24 hours; send a new key with the corrected request.
 9. **Build on the Current API.** Use resources under `/api-reference/beta` and the SDK's current namespaces (`accounts`, `variants`, `payouts`, `deposits`). Use a Legacy endpoint only when [the stability page](https://docs.whop.com/api-reference/stability.md) lists no Current successor.
 10. **Minted tokens always get an explicit `scoped_actions` list.** Omit it and the token inherits every permission of the key that minted it.
+11. **The Whop MCP server is for the agent, the SDK is for the app.** MCP tools act on the signed-in user's live account and can't reach sandbox. Use them to look up IDs and inspect production state, and write SDK code for anything the app does. Consequential MCP tools prepare first and execute only after the user approves. See [references/mcp.md](references/mcp.md).
 
 ## Pick a credential
 
@@ -171,11 +172,23 @@ Versions, pins and upgrades: [references/versioning.md](references/versioning.md
 
 Facts change faster than this skill. Before writing a call you haven't verified:
 
+- With the Whop MCP server connected, search first: `docs_search` finds the page, and `docs_query` reads it (`head -200 /<path>.mdx`). Same pages, no web fetch.
 - Any docs page as Markdown: append `.md` to its URL, e.g. `https://docs.whop.com/developer/guides/webhooks.md`.
 - The index of every page: `https://docs.whop.com/llms.txt`.
 - The API contract: `https://api.whop.com/api/v1/openapi.json`.
 - Which resources are Current vs Legacy: `https://docs.whop.com/api-reference/stability.md`.
 - The SDK itself: the installed `@whop/sdk` package's `reference.md` and request types are what compiles. If docs and types disagree on a parameter name, trust the types for your installed version and check the changelog.
+
+## Use the Whop MCP server
+
+When the `whop` MCP tools are available, use them to fill in what the code needs, instead of asking the user to copy IDs out of the dashboard:
+
+1. `connection_status` shows who is signed in. Get the business from `accounts_list` and pass `account_id` explicitly.
+2. Look things up: `products_list` and `variants_list` for the IDs a checkout needs, `webhooks_list` for existing endpoints, `api-keys_permissions` for what a key can do.
+3. Every operation tool takes `intent` (the user's request) and `intent_id` (one UUID per user message).
+4. Anything that creates, changes or deletes data is a real production change. Do it only when the user asks, show the prepared preview, and confirm with the token and a stable `idempotency_key`.
+
+Tool naming, prepare-and-confirm, what the plugin's connection excludes, and error codes: [references/mcp.md](references/mcp.md).
 
 ## Route to the right skill
 
@@ -215,3 +228,4 @@ Facts change faster than this skill. Before writing a call you haven't verified:
 - [references/versioning.md](references/versioning.md): read when pinning a version, upgrading a pin, or a response changed shape.
 - [references/requests.md](references/requests.md): read for idempotency details, pagination in each language, error bodies, retries and rate limits.
 - [references/concepts.md](references/concepts.md): read when you meet an unfamiliar object or ID prefix.
+- [references/mcp.md](references/mcp.md): read before calling Whop MCP tools: when to use them instead of SDK code, connecting, prepare-and-confirm, idempotency, and errors.

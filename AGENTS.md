@@ -26,10 +26,23 @@ Every other skill assumes `whop-api`'s setup. A skill that needs an API client s
 
 Whop changes its API often. A skill that copies facts goes stale; that is what happened to the previous payments skill (prices in cents instead of dollars, `btoa()` on webhook secrets, removed endpoints).
 
-1. **Every fact comes from the current docs or the published SDK.** The docs source lives in the Whop monorepo at `public-docs/` and is served at `https://docs.whop.com/<path>.md` (the `.mdx` path with `.md` appended). The API contract is `https://api.whop.com/api/v1/openapi.json`. The TypeScript SDK is `@whop/sdk` on npm (version pinned in `package.json`).
-2. **Teach decisions, link details.** A skill tells the agent which path to take and what will go wrong. Full parameter tables stay in the docs: link the `.md` page and tell the agent to fetch it. Fetching `https://docs.whop.com/<path>.md` works in every agent with web access, so skills never depend on an MCP server for docs.
+1. **Every fact comes from the current docs or the published SDK.** The docs source lives in the Whop monorepo at `public-docs/` and is served at `https://docs.whop.com/<path>.md` (the `.mdx` path with `.md` appended). The API contract is `https://api.whop.com/api/v1/openapi.json`. The TypeScript SDK is `@whop/sdk` on npm (version pinned in `package.json`). The MCP server's behavior and tool list come from its public source, [`whopio/whop-mcp-server`](https://github.com/whopio/whop-mcp-server), which is what `mcp.whop.com` runs.
+2. **Teach decisions, link details.** A skill tells the agent which path to take and what will go wrong. Full parameter tables stay in the docs: link the `.md` page and tell the agent to fetch it. Fetching `https://docs.whop.com/<path>.md` works in every agent with web access, so skills never depend on an MCP server for docs; they mention the MCP `docs_search` tool as the faster path when it's connected.
 3. **Every reference file ends with a `## Sources` list** of the docs pages it was written from. `scripts/check-links.py` fetches each one.
 4. **Never invent.** If the docs don't say it, the skill doesn't say it. If you believe something but can't find it, leave it out.
+
+## The Whop MCP server in skills
+
+The plugin ships the Whop MCP server, and skills tell the agent when to use it. The split, which every skill follows:
+
+- **MCP is for the agent's own work**: looking up IDs, checking live state, debugging production, and one-off changes the user asks for. It acts on the signed-in user's live account and can't reach sandbox.
+- **The SDK is for the app's code**, tested in sandbox with an API key.
+- **Consequential tools prepare first.** A skill that names one says the user must approve the preview.
+- **`/claude/mcp` has no money-out writes** (payouts, transfers, deposits, cards, swaps). Skills never suggest a workaround.
+
+`skills/whop-api/references/mcp.md` is the full contract: connecting, `intent`/`intent_id`, prepare-and-confirm, idempotency and error codes. Every other skill has a short `## With the Whop MCP server` section that links to it by skill name.
+
+`scripts/mcp-tools.json` lists every tool on the plugin's route, with its safety flags. `validate.py` fails when a skill, command or subagent names a tool that isn't in it. Refresh it when the server changes, following the steps at the top of `scripts/sync-mcp-tools.py`, and put the source commit in the PR.
 
 ## Writing a skill
 
@@ -93,9 +106,9 @@ The plugin ships more than skills. They are Claude Code features, so they never 
 
 | Path | What | Loaded by |
 |---|---|---|
-| `commands/*.md` | `/whop-developer:<file name>` slash commands (`setup`, `test-webhook`, `audit`). Frontmatter: `description`, optional `argument-hint`; no `name`. After editing one, run `scripts/build-gemini-commands.py` to regenerate `commands/whop-developer/*.toml` | Claude Code, Cursor, Kimi Code; Gemini CLI through the generated TOML |
+| `commands/*.md` | `/whop-developer:<file name>` slash commands (`connect`, `setup`, `test-webhook`, `audit`). Frontmatter: `description`, optional `argument-hint`; no `name`. After editing one, run `scripts/build-gemini-commands.py` to regenerate `commands/whop-developer/*.toml` | Claude Code, Cursor, Kimi Code; Gemini CLI through the generated TOML |
 | `subagents/*.md` | Subagents (`whop-integration-reviewer`, `whop-migrator`), listed file by file in `agents` in the Claude and Cursor manifests (Claude Code takes `.md` paths, not a folder) and by folder in the Kimi manifest. `name` equals the file name; `skills` preloads skills from this repo; `tools` uses Claude Code tool names, which Kimi shares. Not `agents/`: Gemini CLI and Antigravity always load that folder and print errors for Claude-format agents | Claude Code, Cursor, Kimi Code |
-| `hooks/claude-hooks.json` | `SessionStart` and `PostToolUse` hooks, declared in `.claude-plugin/plugin.json`. Not named `hooks/hooks.json`, because Cursor auto-loads that path and uses a different hook format | Claude Code |
+| `hooks/claude-hooks.json` | `SessionStart`, `PostToolUse` and `PreToolUse` hooks (the last makes Claude Code ask the user before any Whop MCP call with `mcp_confirmation_token`, because evals showed models treat the original request as approval), declared in `.claude-plugin/plugin.json`. Not named `hooks/hooks.json`, because Cursor auto-loads that path and uses a different hook format | Claude Code |
 | `hooks/*.mjs` | Hook scripts: Node built-ins only, read local files only, exit 0 on any error, print nothing when there is nothing to say | |
 | `skills/<name>/scripts/` | Scripts that belong to one skill (`whop-webhooks/scripts/send-test-event.mjs`). Mention each from its `SKILL.md` | Every agent |
 
@@ -151,3 +164,10 @@ claude plugin eval . --case 'whop-webhooks-*'
 ```
 
 Run the affected cases after any change to a `SKILL.md`, and compare scores before and after when rewording a description. When a bug is found by hand, add a case for it.
+
+Eval notes:
+
+- **MCP cases use mocks, never the live server.** `evals/mocks/whop/<tool>.md` holds the canned result for each mocked tool. `evals/mocks/whop/_tools.json` holds their real definitions (schemas, descriptions, the two-step notice), generated by `scripts/sync-mcp-tools.py`, so the model sees the server's actual contract. A tool with no mock isn't available in a run. Add a mock (and re-run the sync script) when a case needs another tool. Grade what reached the server with `target: mock_calls`, which also lists calls a hook denied; match `"verdict":"ok"` to count only the ones that ran.
+- **Grant file tools** with `--allow-tools Write Edit` for cases that write files. Otherwise the file graders can't pass.
+- **Pass one `--case` per run.** A repeated `--case` keeps only the last value.
+- **Hooks need a working `node` inside the eval sandbox,** which swaps `HOME`. A version manager's shim (mise, asdf) can break there, so put the real Node binary first on `PATH`, for example `PATH="$(dirname "$(mise which node)"):$PATH"`.
