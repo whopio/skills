@@ -13,7 +13,7 @@
       "name": "whop-developer",
       "source": "./",
       "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with connected accounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "category": "development"
     }
   ]

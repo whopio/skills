@@ -14,32 +14,23 @@ NAME_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 SOFT_LINE_LIMIT = 300
 HARD_LINE_LIMIT = 500
 
+PATTERNS_FILE = ROOT / "hooks" / "patterns.json"
+# The banned-in-docs list is every `literal` in hooks/patterns.json, which the
+# edit hook also uses, so docs and agent-written code are held to the same names.
 BANNED_PATTERNS = [
-    "btoa(",
-    "webhookKey",
-    "hosted_kyc",
-    "hosted_payouts",
-    "plans.create",
-    "companies.create",
-    "companies.list",
-    "companies.update",
-    "parent_company_id",
-    "withdrawals.create",
-    "topups.",
-    "chargeUser",
-    "mcp.whop.com/sse",
-    "new Whop(",
-    "plan_type",
-    "@whop/embedded-components",
-    "@whop/checkout",
-    "WhopCheckoutEmbed",
-    "membership.went_valid",
-    'from "@whop/api"',
+    literal
+    for entry in json.loads(PATTERNS_FILE.read_text())["patterns"]
+    for literal in entry.get("literal", [])
 ]
 BANNED_EXEMPT_FILES = {SKILLS_DIR / "whop-migrate" / "references" / "legacy-map.md"}
 BANNED_EXEMPT_PATTERNS_BY_DIR = {
     SKILLS_DIR / "whop-communities": {"@whop/embedded-components"},
 }
+
+COMMANDS_DIR = ROOT / "commands"
+AGENTS_DIR = ROOT / "agents"
+CLAUDE_HOOKS = ROOT / "hooks" / "claude-hooks.json"
+AGENT_TOOLS = {"Read", "Grep", "Glob", "Bash", "Edit", "Write", "MultiEdit", "Skill", "WebFetch", "WebSearch", "Agent"}
 
 PLUGIN_NAME = "whop-developer"
 MANIFESTS = [
@@ -146,6 +137,13 @@ def check_skill(skill_dir: Path, version: str) -> None:
             if "## Sources" not in ref_file.read_text():
                 error(ref_file, "has no '## Sources' section")
 
+    scripts_dir = skill_dir / "scripts"
+    if scripts_dir.is_dir():
+        for script in sorted(p for p in scripts_dir.rglob("*") if p.is_file()):
+            rel = str(script.relative_to(skill_dir))
+            if rel not in body:
+                error(script, f"not mentioned in {relative(skill_md)}")
+
     openai_yaml = skill_dir / "agents" / "openai.yaml"
     if not openai_yaml.is_file():
         error(skill_dir, "missing agents/openai.yaml")
@@ -232,6 +230,85 @@ def check_manifests(version: str, skill_names: list[str]) -> None:
             error("README.md", f"skills table does not link skills/{name}")
 
 
+def check_patterns(skill_names: list[str]) -> None:
+    data = load_json(PATTERNS_FILE)
+    if data is None:
+        return
+    seen: set[str] = set()
+    for entry in data.get("patterns", []):
+        entry_id = entry.get("id")
+        where = f"{relative(PATTERNS_FILE)} ({entry_id})"
+        if not entry_id or entry_id in seen:
+            error(where, "every pattern needs a unique id")
+        seen.add(entry_id)
+        for key in ("regex", "fix", "skill"):
+            if not isinstance(entry.get(key), str) or not entry[key].strip():
+                error(where, f"missing {key}")
+        if entry.get("skill") not in skill_names:
+            error(where, f"skill {entry.get('skill')!r} is not a skill in this repo")
+        if not isinstance(entry.get("literal", []), list):
+            error(where, "literal must be a list of strings")
+        if entry.get("severity") not in (None, "security"):
+            error(where, "severity must be omitted or 'security'")
+
+
+def check_plugin_extras(skill_names: list[str]) -> None:
+    commands = sorted(COMMANDS_DIR.glob("*.md")) if COMMANDS_DIR.is_dir() else []
+    agents = sorted(AGENTS_DIR.glob("*.md")) if AGENTS_DIR.is_dir() else []
+    readme = (ROOT / "README.md").read_text() if (ROOT / "README.md").is_file() else ""
+
+    for command in commands:
+        parsed = parse_frontmatter(command)
+        if parsed is None:
+            continue
+        frontmatter, body = parsed
+        if not isinstance(frontmatter.get("description"), str) or not frontmatter["description"].strip():
+            error(command, "description is missing")
+        if "name" in frontmatter:
+            error(command, "commands take their name from the file name; remove `name`")
+        if f"/{PLUGIN_NAME}:{command.stem}" not in readme:
+            error("README.md", f"does not document /{PLUGIN_NAME}:{command.stem}")
+        for skill in re.findall(r"`(whop-[a-z-]+)` skill", body):
+            if skill not in skill_names:
+                error(command, f"names skill {skill!r}, which does not exist")
+
+    for agent in agents:
+        parsed = parse_frontmatter(agent)
+        if parsed is None:
+            continue
+        frontmatter, _ = parsed
+        if frontmatter.get("name") != agent.stem:
+            error(agent, f"name {frontmatter.get('name')!r} must equal the file name {agent.stem!r}")
+        if not isinstance(frontmatter.get("description"), str) or not frontmatter["description"].strip():
+            error(agent, "description is missing")
+        tools = [t.strip() for t in str(frontmatter.get("tools", "")).split(",") if t.strip()]
+        unknown_tools = set(tools) - AGENT_TOOLS
+        if unknown_tools:
+            error(agent, f"unknown tools {sorted(unknown_tools)}")
+        for skill in frontmatter.get("skills") or []:
+            if skill not in skill_names:
+                error(agent, f"preloads skill {skill!r}, which does not exist")
+        if f"`{agent.stem}`" not in readme:
+            error("README.md", f"does not document the {agent.stem} subagent")
+
+    hooks = load_json(CLAUDE_HOOKS)
+    if hooks is not None:
+        for event, groups in hooks.get("hooks", {}).items():
+            for group in groups:
+                for hook in group.get("hooks", []):
+                    for script in re.findall(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\"' ]+)", hook.get("command", "")):
+                        if not (ROOT / script).is_file():
+                            error(CLAUDE_HOOKS, f"{event} hook runs {script}, which does not exist")
+                    if not isinstance(hook.get("timeout"), (int, float)):
+                        error(CLAUDE_HOOKS, f"{event} hook needs a timeout (seconds)")
+    claude_manifest = load_json(ROOT / ".claude-plugin/plugin.json") or {}
+    if claude_manifest.get("hooks") != "./hooks/claude-hooks.json":
+        error(ROOT / ".claude-plugin/plugin.json", "hooks must point to ./hooks/claude-hooks.json")
+    if (ROOT / "hooks" / "hooks.json").exists():
+        error(ROOT / "hooks" / "hooks.json", "Cursor auto-loads this path with its own hook format; keep Claude hooks in claude-hooks.json")
+
+
+
 def check_no_symlinks() -> None:
     ignored = {".git", "node_modules", ".venv", ".snippets"}
     for path in ROOT.rglob("*"):
@@ -246,7 +323,10 @@ def main() -> int:
         error(SKILLS_DIR, "no skills found")
     for skill_dir in skill_dirs:
         check_skill(skill_dir, version)
-    check_manifests(version, [p.name for p in skill_dirs])
+    skill_names = [p.name for p in skill_dirs]
+    check_manifests(version, skill_names)
+    check_patterns(skill_names)
+    check_plugin_extras(skill_names)
     check_no_symlinks()
 
     for message in warnings:
@@ -256,7 +336,8 @@ def main() -> int:
     if errors:
         print(f"\n{len(errors)} error(s), {len(warnings)} warning(s)")
         return 1
-    print(f"OK: {len(skill_dirs)} skills, version {version}, {len(warnings)} warning(s)")
+    extras = len(list(COMMANDS_DIR.glob("*.md"))), len(list(AGENTS_DIR.glob("*.md")))
+    print(f"OK: {len(skill_dirs)} skills, {extras[0]} commands, {extras[1]} agents, version {version}, {len(warnings)} warning(s)")
     return 0
 
 

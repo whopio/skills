@@ -1,0 +1,243 @@
+{
+  "$comment": "Stale and unsafe Whop code. `literal` strings are banned from skill docs by scripts/validate.py; `regex` (JavaScript syntax) is what hooks/check-whop-code.mjs matches in code the agent writes. Every fix comes from skills/whop-migrate/references/legacy-map.md or a skill's Rules.",
+  "patterns": [
+    {
+      "id": "whop-api-package",
+      "literal": ["from \"@whop/api\""],
+      "regex": "from\\s+['\"]@whop/api['\"]|require\\(\\s*['\"]@whop/api['\"]\\s*\\)",
+      "fix": "`@whop/api` is deprecated and the public GraphQL API behind it stopped on October 26, 2026. Use `WhopClient` from `@whop/sdk`. For iframe user tokens, verify with `jose` as `whop-apps` shows.",
+      "skill": "whop-migrate"
+    },
+    {
+      "id": "sdk-default-import",
+      "regex": "import\\s+Whop\\s+from\\s+['\"]@whop/sdk['\"]",
+      "fix": "`@whop/sdk` 2.x has no default export. Use `import { WhopClient } from \"@whop/sdk\"` (types: `import type { Whop } from \"@whop/sdk\"`).",
+      "skill": "whop-api"
+    },
+    {
+      "id": "new-whop",
+      "literal": ["new Whop("],
+      "regex": "new\\s+Whop\\(",
+      "fix": "The client is `new WhopClient({ token })`.",
+      "skill": "whop-api"
+    },
+    {
+      "id": "client-apikey-option",
+      "regex": "new\\s+WhopClient\\(\\s*\\{[^}]*\\bapiKey\\s*:",
+      "fix": "`WhopClient` takes `token`, not `apiKey`: `new WhopClient({ token: process.env.WHOP_API_KEY })`.",
+      "skill": "whop-api"
+    },
+    {
+      "id": "sandbox-base-url",
+      "regex": "base_?ur[li][^\\n]{0,80}sandbox-api\\.whop\\.com",
+      "flags": "i",
+      "fix": "Switch environments with `environment: WhopEnvironment.Sandbox` (Python `WhopEnvironment.SANDBOX`), not a base URL. A base URL override sends every request to one host and operations that need another host are refused.",
+      "skill": "whop-api"
+    },
+    {
+      "id": "webhook-key-option",
+      "literal": ["webhookKey"],
+      "regex": "\\bwebhookKey\\b",
+      "fix": "Verify with `unwrapWebhook(rawBody, { headers, key })` from `@whop/sdk/helpers`, passing the `ws_...` secret unchanged.",
+      "skill": "whop-webhooks"
+    },
+    {
+      "id": "base64-webhook-secret",
+      "literal": ["btoa("],
+      "regex": "btoa\\([^)\\n]*(secret|webhook)",
+      "flags": "i",
+      "fix": "Pass the webhook secret exactly as Whop gave it (`ws_...`). Never base64-encode it; `unwrapWebhook` derives the key itself.",
+      "skill": "whop-webhooks"
+    },
+    {
+      "id": "webhooks-unwrap-method",
+      "regex": "\\.webhooks\\.unwrap\\(",
+      "fix": "Use `unwrapWebhook(rawBody, { headers, key })` from `@whop/sdk/helpers`.",
+      "skill": "whop-webhooks"
+    },
+    {
+      "id": "plans-namespace",
+      "literal": ["plans.create"],
+      "regex": "\\.plans\\.(list|retrieve|create|update|delete|calculateTax)\\(",
+      "fix": "Plans are variants: `client.variants.list/retrieve/create/update/delete` (variant IDs keep the `plan_` prefix). `plans.calculateTax` is `client.paymentQuotes.create`.",
+      "skill": "whop-migrate"
+    },
+    {
+      "id": "companies-namespace",
+      "literal": ["companies.create", "companies.list", "companies.update"],
+      "regex": "\\.companies\\.(retrieve|list|create|update)\\(",
+      "fix": "Companies are accounts: `client.accounts.retrieve/list/create/update`, and `client.accounts.me()` for your own.",
+      "skill": "whop-migrate"
+    },
+    {
+      "id": "parent-company-id",
+      "literal": ["parent_company_id"],
+      "regex": "\\bparent_company_id\\b",
+      "fix": "`client.accounts.create({ email, title, metadata })` called with the platform's Account API key creates the account under that platform. There is no parent field.",
+      "skill": "whop-platforms"
+    },
+    {
+      "id": "company-id-field",
+      "regex": "\\bcompany_id\\s*[:=]",
+      "fix": "Current API requests and filters take `account_id`, not `company_id` (a few Legacy-only resources still take `company_id`; follow the SDK type for that method).",
+      "skill": "whop-migrate"
+    },
+    {
+      "id": "withdrawals-namespace",
+      "literal": ["withdrawals.create"],
+      "regex": "\\.withdrawals\\.(list|retrieve|create)\\(",
+      "fix": "Withdrawals are payouts: `client.payouts.create({ account_id, amount, payout_method_id })` with an `Idempotency-Key`. `/withdrawals` list and create return `410`.",
+      "skill": "whop-payouts"
+    },
+    {
+      "id": "topups-namespace",
+      "literal": ["topups."],
+      "regex": "\\.topups\\.",
+      "fix": "Top-ups are deposits: `client.deposits.create({ destination, amount })`.",
+      "skill": "whop-payouts"
+    },
+    {
+      "id": "renamed-namespaces",
+      "regex": "\\.(ledgerAccounts|feeMarkups|payoutMethods|authorizedUsers|socialAccounts|paymentMethodDomains)\\.",
+      "fix": "Renamed: `ledgerAccounts` -> `accounts.retrieve` (read `balances`), `feeMarkups` -> `accounts.fees`, `payoutMethods` -> `payouts.methods`, `authorizedUsers` -> `teamMembers`, `socialAccounts` -> `externalAccounts`, `paymentMethodDomains` -> `domains`.",
+      "skill": "whop-migrate"
+    },
+    {
+      "id": "charge-user",
+      "literal": ["chargeUser"],
+      "regex": "\\bchargeUser\\b",
+      "fix": "Charge a saved method with `client.payments.create({ member_id, payment_method_id, ... })`.",
+      "skill": "whop-checkout"
+    },
+    {
+      "id": "pay-user",
+      "regex": "\\bpayUser\\(",
+      "fix": "Send funds with `client.transfers.create({ type: \"balance\", amount, currency, origin_id, destination_id })` and an `Idempotency-Key`.",
+      "skill": "whop-payouts"
+    },
+    {
+      "id": "checkout-sessions",
+      "regex": "\\bcreateCheckoutSession\\b|\\bcheckout_sessions\\b",
+      "fix": "Checkout sessions are checkout configurations: `client.checkoutConfigurations.create(...)` returns `purchase_url`.",
+      "skill": "whop-checkout"
+    },
+    {
+      "id": "hosted-kyc",
+      "literal": ["hosted_kyc"],
+      "regex": "\\bhosted_kyc\\b",
+      "fix": "The account link use case is `account_onboarding`.",
+      "skill": "whop-platforms"
+    },
+    {
+      "id": "hosted-payouts",
+      "literal": ["hosted_payouts"],
+      "regex": "\\bhosted_payouts\\b",
+      "fix": "The account link use case is `payouts_portal`.",
+      "skill": "whop-payouts"
+    },
+    {
+      "id": "plan-type",
+      "literal": ["plan_type"],
+      "regex": "\\bplan_types?\\b",
+      "fix": "`plan_type` is `billing_type` (`one_time` or `renewal`); the filter `plan_types` is `billing_types`.",
+      "skill": "whop-checkout"
+    },
+    {
+      "id": "add-free-days",
+      "regex": "\\badd_free_days\\b",
+      "fix": "Use `client.memberships.extend({ id, days })`.",
+      "skill": "whop-billing"
+    },
+    {
+      "id": "went-valid-events",
+      "literal": ["membership.went_valid"],
+      "regex": "membership[._]went_(valid|invalid)",
+      "fix": "`membership.went_valid` is `membership.activated`; `membership.went_invalid` is `membership.updated` (read `previous_attributes.status`).",
+      "skill": "whop-webhooks"
+    },
+    {
+      "id": "membership-deactivated-event",
+      "regex": "['\"`]membership\\.deactivated['\"`]",
+      "fix": "`membership.deactivated` still delivers but is no longer documented. Losing access arrives as `membership.updated` with `previous_attributes.status`.",
+      "skill": "whop-webhooks"
+    },
+    {
+      "id": "underscored-event-names",
+      "regex": "['\"`](payment_succeeded|membership_activated|membership_updated|refund_created|dispute_created)['\"`]",
+      "fix": "Event names are dotted and live in `event.type`: `payment.succeeded`, `membership.activated`, `membership.updated`, `refund.created`, `dispute.created`.",
+      "skill": "whop-webhooks"
+    },
+    {
+      "id": "withdrawal-events",
+      "regex": "['\"`](withdrawal\\.(created|updated|reversed)|payout\\.completed)['\"`]",
+      "fix": "Payout events are `payout.created`, `payout.updated` and `payout.reversed`. There is no `payout.completed`; check `payout.updated` with `status: \"completed\"`.",
+      "skill": "whop-payouts"
+    },
+    {
+      "id": "api-v2-and-graphql",
+      "regex": "api\\.whop\\.com/(api/)?v2\\b|public-graphql",
+      "fix": "Use the Current API at `https://api.whop.com/api/v1` (same API keys). API v2 stops working on November 13, 2026; public GraphQL stopped on October 26, 2026.",
+      "skill": "whop-migrate"
+    },
+    {
+      "id": "mcp-sse-url",
+      "literal": ["mcp.whop.com/sse"],
+      "regex": "mcp\\.whop\\.com/sse",
+      "fix": "The `/sse` endpoint is retired. Use `https://mcp.whop.com/mcp`.",
+      "skill": "whop-migrate"
+    },
+    {
+      "id": "old-checkout-embed",
+      "literal": ["@whop/checkout", "WhopCheckoutEmbed"],
+      "regex": "@whop/checkout\\b|\\bWhopCheckoutEmbed\\b",
+      "fix": "Embed checkout with `Checkout` + `CheckoutElement` from `@whop/elements-react` (or `loadWhop` from `@whop/elements`).",
+      "skill": "whop-checkout"
+    },
+    {
+      "id": "embedded-components-for-payouts",
+      "literal": ["@whop/embedded-components"],
+      "regex": "@whop/embedded-components",
+      "requires": "payout|kyc|verification|withdraw",
+      "requiresFlags": "i",
+      "fix": "Payout and KYC components moved to `@whop/elements-react` / `@whop/elements` (for example `Verifications` + `KycElement`). Only chat still uses `@whop/embedded-components-*`.",
+      "skill": "whop-payouts"
+    },
+    {
+      "id": "amount-in-cents",
+      "regex": "\\b(initial_price|renewal_price|amount)\\s*[:=][^,;\\n]*\\*\\s*100\\b",
+      "unless": "@whop/elements",
+      "fix": "Whop API amounts are in dollars (major currency units): `initial_price: 10.0` is $10.00, so don't multiply by 100. (Elements `amount` props are the exception: they take minor units.)",
+      "skill": "whop-api"
+    },
+    {
+      "id": "public-env-secret",
+      "severity": "security",
+      "regex": "\\b(NEXT_PUBLIC|VITE|EXPO_PUBLIC|REACT_APP|NUXT_PUBLIC|GATSBY|PUBLIC)_[A-Z0-9_]*WHOP[A-Z0-9_]*(API_KEY|SECRET)\\b",
+      "fix": "This prefix bundles the value into browser or mobile code. Whop API keys and webhook secrets stay on the server: name it `WHOP_API_KEY` / `WHOP_WEBHOOK_SECRET` and read it only in server code.",
+      "skill": "whop-api"
+    },
+    {
+      "id": "secret-in-client-component",
+      "severity": "security",
+      "regex": "\\bWHOP_(API_KEY|WEBHOOK_SECRET)\\b",
+      "requires": "^\\s*['\"]use client['\"]",
+      "requiresFlags": "m",
+      "fix": "This is a client component, so the key would ship to the browser. Call Whop from a server route or server action and have the client call that.",
+      "skill": "whop-api"
+    },
+    {
+      "id": "hardcoded-webhook-secret",
+      "severity": "security",
+      "regex": "['\"`]ws_[A-Za-z0-9]{32,}['\"`]",
+      "fix": "Don't commit the webhook secret. Read it from `process.env.WHOP_WEBHOOK_SECRET`.",
+      "skill": "whop-webhooks"
+    },
+    {
+      "id": "webhook-parsed-body",
+      "severity": "security",
+      "regex": "unwrapWebhook(<[^>]*>)?\\(\\s*(JSON\\.stringify|await\\s+\\w+\\.json\\(\\)|req\\.body\\b)",
+      "fix": "Verify the raw body (`await request.text()`; in Express mount the webhook route with a raw-body parser instead of `express.json()`). A parsed or re-serialized body changes the bytes and every signature check fails.",
+      "skill": "whop-webhooks"
+    }
+  ]
+}

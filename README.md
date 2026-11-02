@@ -20,6 +20,28 @@ Each skill follows the [Agent Skills specification](https://agentskills.io/speci
 
 You don't call skills by name. Describe what you want ("add a Whop webhook that fulfills the order when a payment succeeds") and the agent loads the matching skill.
 
+## Commands, agents and checks
+
+The plugin adds these on top of the skills.
+
+| Command | Does |
+|---|---|
+| `/whop-developer:setup` | Installs the SDK, adds the env var names, writes a server-only client and proves it works with a real sandbox call |
+| `/whop-developer:test-webhook` | Sends signed test events to your running webhook handler: valid signature, tampered signature, duplicate delivery and the 5-second deadline |
+| `/whop-developer:audit` | Reviews the integration for leaked keys, unverified webhooks, missing idempotency keys, cents-vs-dollars bugs, client-side access checks and stale API names |
+
+| Subagent | Does |
+|---|---|
+| `whop-integration-reviewer` | Read-only review with `file:line` findings by severity (used by `/whop-developer:audit`) |
+| `whop-migrator` | Rewrites old Whop code (`@whop/api`, API v2, plans, companies, withdrawals, cents) or a Stripe integration to the current API, and type-checks the result |
+
+Claude Code also runs two hooks:
+
+- **After every file edit**, it checks the lines just written for names the current API replaced (`plans.create`, `new Whop(`, `company_id`, `membership.went_valid`...) and for unsafe code: a Whop key under `NEXT_PUBLIC_` or in a `"use client"` file, a hard-coded `ws_` secret, a parsed webhook body. It tells the agent the fix and the skill to load. Each finding is reported once per session.
+- **At session start**, in a project that already uses Whop, it tells the agent which Whop packages are installed, flags deprecated ones, and explains that the MCP server works on the live account and confirms consequential actions in two steps. Other projects get nothing.
+
+Both hooks need Node 18+ and do nothing if it's missing. They read local files only and never send data anywhere. The webhook test script ships inside the `whop-webhooks` skill, so agents that install only the skills get it too.
+
 ## Install
 
 **Claude Code**
