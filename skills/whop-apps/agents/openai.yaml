@@ -1,0 +1,5 @@
+interface:
+  display_name: "Whop Apps"
+  short_description: "Build apps that run inside Whop"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop-apps to add a server route to my Whop app that verifies the current user and checks their access to the experience."

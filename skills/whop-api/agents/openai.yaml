@@ -1,0 +1,5 @@
+interface:
+  display_name: "Whop API"
+  short_description: "Set up the Whop SDK, credentials, and request conventions"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop-api to set up the Whop SDK in my backend against the sandbox and make a first authenticated call."

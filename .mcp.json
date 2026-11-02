@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "whop": {
+      "type": "http",
+      "url": "https://mcp.whop.com/claude/mcp",
+      "headers": {
+        "X-Whop-Plugin": "skills/0.1.0"
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 14 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    name: Structure, snippets & links
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: |
+          npm ci
+          python3 -m venv .venv
+          .venv/bin/pip install --quiet pyyaml
+
+      - name: Structure and versions
+        run: .venv/bin/python scripts/validate.py
+
+      - name: Type-check snippets against the pinned SDK
+        run: npm run -s check:snippets
+
+      - name: Docs links resolve
+        run: python3 scripts/check-links.py

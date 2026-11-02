@@ -1,0 +1,14 @@
+{
+  "name": "whop-skills",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:snippets": "node scripts/check-snippets.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "@whop/sdk": "2.7.0",
+    "jose": "6.2.15",
+    "typescript": "5.9.3"
+  }
+}

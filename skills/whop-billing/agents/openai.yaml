@@ -1,0 +1,5 @@
+interface:
+  display_name: "Whop Billing"
+  short_description: "Check access and manage Whop memberships, invoices, refunds and disputes"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop-billing to protect my premium API route so only users with an active Whop membership can reach it, and let them cancel at the end of the billing period."
