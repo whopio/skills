@@ -17,7 +17,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Whop Billing
@@ -162,6 +162,14 @@ await whop.disputes.submit({ id: "dspt_xxxxxxxxxxxxx" });
 ```
 
 Omit `partial_amount` for a full refund. A disputed payment can't be refunded, and a lost dispute creates no refund record. Evidence can be staged repeatedly until `submit`, which locks it; submit before `evidence_due_at`. Alerts, statuses and fraud rules are in [references/disputes.md](references/disputes.md) and [references/fraud.md](references/fraud.md).
+
+## With the Whop MCP server
+
+The `whop` MCP tools act on the signed-in user's **live** account and can't reach sandbox (`whop-api` covers connecting, `intent`/`intent_id`, and prepare-and-confirm). Its `docs_search` and `docs_query` read the docs pages this skill links. Use the tools to fill in and debug the code, not to replace it:
+
+- Find out why someone can't get in: `users_access` (the same check as `users.checkAccess`), `memberships_get`, `members_get`, `members_logs`.
+- Review money after the sale: `refunds_list`, `disputes_get`, `dispute-alerts_list`, `invoices_get`.
+- `payments_refund`, `memberships_cancel`, `memberships_extend`, `invoices_send` and `disputes_submit` are prepare-and-confirm tools on real customers. Run them only when the user asks for that change; the app's own flows use the SDK.
 
 ## Verify
 

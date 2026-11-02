@@ -4,7 +4,7 @@
       "type": "http",
       "url": "https://mcp.whop.com/claude/mcp",
       "headers": {
-        "X-Whop-Plugin": "skills/0.3.0"
+        "X-Whop-Plugin": "skills/0.4.0"
       }
     }
   }

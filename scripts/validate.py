@@ -277,6 +277,27 @@ def check_mcp_configs(version: str) -> None:
             error(ROOT / path, "description must match plugin.json")
 
 
+MCP_TOOLS_FILE = ROOT / "scripts" / "mcp-tools.json"
+# API enum values that look like tool names.
+NOT_MCP_TOOLS = {"payouts_portal", "members_only"}
+
+
+def check_mcp_tool_names() -> None:
+    """Every MCP tool a skill, command or subagent names must exist on the plugin's route."""
+    data = load_json(MCP_TOOLS_FILE)
+    if data is None:
+        return
+    tools = set(data.get("tools", {}))
+    # A token counts as a tool name when its first segment is a tool group.
+    groups = {name.split("_", 1)[0] for name in tools if "_" in name}
+    files = [*SKILLS_DIR.rglob("*.md"), *COMMANDS_DIR.glob("*.md"), *AGENTS_DIR.glob("*.md"), ROOT / "hooks" / "session-start.mjs"]
+    for path in files:
+        for line_number, line in enumerate(path.read_text().splitlines(), start=1):
+            for token in re.findall(r"`([a-z][a-z-]*_[a-z][a-z_-]*)`", line):
+                if token.split("_", 1)[0] in groups and token not in tools and token not in NOT_MCP_TOOLS:
+                    error(f"{relative(path)}:{line_number}", f"MCP tool {token!r} isn't on the plugin's MCP route (scripts/mcp-tools.json)")
+
+
 def check_gemini_commands() -> None:
     import subprocess
 
@@ -426,6 +447,7 @@ def main() -> int:
     check_patterns(skill_names)
     check_plugin_extras(skill_names)
     check_gemini_commands()
+    check_mcp_tool_names()
     check_no_symlinks()
 
     for message in warnings:

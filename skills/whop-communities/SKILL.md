@@ -18,7 +18,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Whop Communities
@@ -214,6 +214,13 @@ await whop.courseLessons.create({ chapter_id: chapter.id, lesson_type: "text", t
 ```
 
 `paywall_amount` is in major units of `paywall_currency` (`5.0` = $5.00). Students, progress and the rest are in [references/forums-and-courses.md](references/forums-and-courses.md).
+
+## With the Whop MCP server
+
+The `whop` MCP tools act on the signed-in user's **live** account and can't reach sandbox (`whop-api` covers connecting, `intent`/`intent_id`, and prepare-and-confirm). Its `docs_search` and `docs_query` read the docs pages this skill links. Use the tools to fill in and debug the code, not to replace it:
+
+- Find IDs for the embed: `chat-channels_list`, `support-channels_list`, `forums_list`, `courses_list`; read messages with `messages_list`.
+- Chat access tokens are minted by your app's server for each signed-in user with `accessTokens.create` (Rules 2-4). Never mint one through MCP (`access-tokens_create`) for an app to use.
 
 ## Verify
 
