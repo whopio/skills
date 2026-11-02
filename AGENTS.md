@@ -95,6 +95,7 @@ Each skill installs on its own (`npx skills add <repo> --skill whop-checkout`). 
 |---|---|
 | `plugin.json` + `mcp.json` | The [Agent Plugins](https://agent-plugins.org) standard: Cursor, Codex (OpenAI metadata under `extensions.com.openai`) |
 | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` + `.mcp.json` | Claude Code, `npx plugins` |
+| `.codex-plugin/plugin.json` + `.mcp.json` | Older Codex builds and `npx plugins -t codex`, which otherwise generate a manifest with no branding. Current Codex reads `plugin.json` first. `interface` must equal `plugin.json`'s `extensions.com.openai.interface` |
 | `.cursor-plugin/plugin.json` | Cursor Marketplace |
 | `.grok-plugin/plugin.json` + `.mcp.json` | Grok Build |
 | `gemini-extension.json` | Gemini CLI (MCP inline, as `httpUrl`) |

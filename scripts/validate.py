@@ -46,6 +46,7 @@ MANIFESTS = [
     ("plugin.json", lambda d: d["version"], lambda d: d["name"]),
     (".claude-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
     (".claude-plugin/marketplace.json", lambda d: d["plugins"][0]["version"], lambda d: d["plugins"][0]["name"]),
+    (".codex-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
     (".cursor-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
     (".grok-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
     ("gemini-extension.json", lambda d: d["version"], lambda d: d["name"]),
@@ -212,6 +213,18 @@ def check_manifests(version: str, skill_names: list[str]) -> None:
     gemini_server = gemini.get("mcpServers", {}).get("whop", {})
     if gemini_server.get("httpUrl") != server.get("url") or gemini_server.get("headers") != server.get("headers"):
         error(ROOT / "gemini-extension.json", "mcpServers.whop must match .mcp.json (httpUrl = url, same headers)")
+
+    portable = load_json(ROOT / "plugin.json") or {}
+    codex = load_json(ROOT / ".codex-plugin/plugin.json") or {}
+    openai_interface = portable.get("extensions", {}).get("com.openai", {}).get("interface")
+    if codex.get("interface") != openai_interface:
+        error(ROOT / ".codex-plugin/plugin.json", "interface must equal plugin.json extensions.com.openai.interface")
+    for key in ("description", "author", "homepage", "repository", "license", "keywords"):
+        if codex.get(key) != portable.get(key):
+            error(ROOT / ".codex-plugin/plugin.json", f"{key} must match plugin.json")
+    for key, target in (("skills", "skills"), ("mcpServers", ".mcp.json")):
+        if not (ROOT / str(codex.get(key, ""))).resolve() == (ROOT / target).resolve():
+            error(ROOT / ".codex-plugin/plugin.json", f"{key} must point to ./{target}")
 
     readme = (ROOT / "README.md").read_text() if (ROOT / "README.md").is_file() else ""
     for name in skill_names:

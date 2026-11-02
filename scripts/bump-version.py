@@ -11,6 +11,7 @@ SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
 JSON_FILES = [
     "plugin.json",
     ".claude-plugin/plugin.json",
+    ".codex-plugin/plugin.json",
     ".cursor-plugin/plugin.json",
     ".grok-plugin/plugin.json",
     "gemini-extension.json",
