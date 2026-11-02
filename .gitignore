@@ -1,0 +1,5 @@
+node_modules/
+.snippets/
+.venv/
+evals/results/
+.DS_Store

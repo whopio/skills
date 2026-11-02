@@ -1,0 +1,5 @@
+interface:
+  display_name: "Whop Migrate"
+  short_description: "Move from Stripe or old Whop APIs to the current Whop API"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop-migrate to scan this codebase for Stripe or old Whop API code and move it to the current Whop API."

@@ -1,0 +1,23 @@
+{
+  "name": "whop-developer",
+  "displayName": "Whop Developer",
+  "version": "0.1.0",
+  "author": {
+    "name": "Whop",
+    "url": "https://whop.com"
+  },
+  "homepage": "https://docs.whop.com/developer/start",
+  "repository": "https://github.com/whopio/skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "whop",
+    "payments",
+    "checkout",
+    "webhooks",
+    "subscriptions",
+    "payouts",
+    "marketplace",
+    "connected-accounts"
+  ],
+  "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with connected accounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server."
+}

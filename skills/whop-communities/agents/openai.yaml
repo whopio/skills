@@ -1,0 +1,5 @@
+interface:
+  display_name: "Whop Communities"
+  short_description: "Embed Whop chat and manage forums and courses"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop-communities to embed Whop chat for my signed-in users, with a server route that mints their chat token."
