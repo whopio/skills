@@ -1,0 +1,155 @@
+name: Sync MCP tools
+
+# Keeps scripts/mcp-tools.json and the eval mocks' tool definitions in step
+# with the Whop MCP server. whopio/whop-mcp-server is updated after every
+# production deploy of mcp.whop.com, so this follows production. When the
+# tools change, it opens (or updates) one PR on the bot/sync-mcp-tools branch
+# with the added and removed tools and the result of the repo's checks.
+
+on:
+  schedule:
+    - cron: "37 14 * * *"
+  workflow_dispatch:
+    inputs:
+      mcp_ref:
+        description: whop-mcp-server branch, tag or commit to sync from
+        required: false
+        default: main
+  pull_request:
+    paths:
+      - .github/workflows/sync-mcp-tools.yml
+      - scripts/sync-mcp-tools.py
+      - scripts/validate.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-mcp-tools-${{ github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  sync:
+    name: Sync tool list from whop-mcp-server
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      BRANCH: bot/sync-mcp-tools
+      MCP_REF: ${{ inputs.mcp_ref || 'main' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/checkout@v7
+        with:
+          repository: whopio/whop-mcp-server
+          ref: ${{ env.MCP_REF }}
+          path: mcp-src
+          persist-credentials: false
+
+      # Outside the repo, so validate.py's symlink check never sees its node_modules.
+      - name: Move the MCP checkout out of the repo
+        run: mv mcp-src "$RUNNER_TEMP/mcp-src"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Generate the MCP tool registry
+        working-directory: ${{ runner.temp }}/mcp-src
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+          cd packages/server
+          pnpm exec tsx scripts/generate-registry.ts --summary > "$RUNNER_TEMP/summary.txt"
+          pnpm exec tsx scripts/generate-registry.ts
+          tail -n 1 "$RUNNER_TEMP/summary.txt"
+
+      - name: Sync the tool list and eval mocks
+        run: python3 scripts/sync-mcp-tools.py "$RUNNER_TEMP/mcp-src" "$RUNNER_TEMP/summary.txt" --report "$RUNNER_TEMP/report.md"
+
+      - name: Run the repo's checks on the result
+        id: checks
+        run: |
+          npm ci
+          python3 -m venv .venv
+          .venv/bin/pip install --quiet pyyaml
+          set +e
+          .venv/bin/python scripts/validate.py > "$RUNNER_TEMP/validate.txt" 2>&1
+          validate=$?
+          npm test > "$RUNNER_TEMP/test.txt" 2>&1
+          tests=$?
+          set -e
+          echo "failed=$([ $validate -ne 0 ] || [ $tests -ne 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          {
+            echo
+            echo "### Checks"
+            echo
+            [ $validate -eq 0 ] && echo "- \`scripts/validate.py\`: passed" || echo "- \`scripts/validate.py\`: **failed**"
+            [ $tests -eq 0 ] && echo "- \`npm test\`: passed" || echo "- \`npm test\`: **failed**"
+            if [ $validate -ne 0 ]; then
+              echo
+              echo '```text'
+              grep -E '^(error|warning)' "$RUNNER_TEMP/validate.txt" | head -n 40
+              echo '```'
+            fi
+            if [ $tests -ne 0 ]; then
+              echo
+              echo '```text'
+              grep -E '^not ok|# (fail|pass)' "$RUNNER_TEMP/test.txt" | head -n 40
+              echo '```'
+            fi
+            echo
+            echo "Opened by the \`Sync MCP tools\` workflow, which ran these checks itself: GitHub doesn't start other workflows for PRs it opens with \`GITHUB_TOKEN\`. Push any commit to this branch to run the full \`Validate\` workflow."
+          } >> "$RUNNER_TEMP/report.md"
+          cat "$RUNNER_TEMP/report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Detect changes
+        id: diff
+        run: |
+          git status --porcelain -- scripts/mcp-tools.json evals
+          if [ -n "$(git status --porcelain -- scripts/mcp-tools.json evals)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open or update the sync PR
+        if: github.event_name != 'pull_request' && steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED: ${{ steps.checks.outputs.failed }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add scripts/mcp-tools.json evals
+          git commit --quiet -m "chore(mcp): sync the MCP tool list from whop-mcp-server@$(git -C "$RUNNER_TEMP/mcp-src" rev-parse --short HEAD)"
+          git push --force --quiet origin "$BRANCH"
+          title="Sync the MCP tool list from whop-mcp-server"
+          [ "$FAILED" = "true" ] && title="Action needed: $title"
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --title "$title" --body-file "$RUNNER_TEMP/report.md"
+          else
+            gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$RUNNER_TEMP/report.md"
+          fi
+
+      - name: Close a sync PR that is no longer needed
+        if: github.event_name != 'pull_request' && steps.diff.outputs.changed == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh pr close "$existing" --delete-branch --comment "The tool list on main matches whop-mcp-server again, so this sync isn't needed."
+          fi
+
+      - name: Fail when the synced repo doesn't pass its checks
+        if: steps.checks.outputs.failed == 'true'
+        run: |
+          echo "::error::validate.py or npm test fails with the MCP server's current tools. See the job summary."
+          exit 1
