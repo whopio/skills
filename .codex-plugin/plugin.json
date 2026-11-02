@@ -1,0 +1,46 @@
+{
+  "name": "whop-developer",
+  "version": "0.1.0",
+  "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with connected accounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server.",
+  "author": {
+    "name": "Whop",
+    "url": "https://whop.com"
+  },
+  "homepage": "https://docs.whop.com/developer/start",
+  "repository": "https://github.com/whopio/skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "whop",
+    "payments",
+    "checkout",
+    "webhooks",
+    "subscriptions",
+    "payouts",
+    "marketplace",
+    "connected-accounts"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Whop Developer",
+    "shortDescription": "Build payments, payouts, and apps on Whop",
+    "longDescription": "Skills that teach your agent to build on the current Whop API: checkout links and embedded checkout, verified webhooks, memberships and access checks, payouts and transfers, marketplaces with connected accounts and KYC, apps that run inside Whop, embedded chat, and migrations from Stripe or older Whop code.",
+    "developerName": "Whop",
+    "category": "Coding",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://docs.whop.com/developer/start",
+    "privacyPolicyURL": "https://whop.com/privacy",
+    "termsOfServiceURL": "https://whop.com/tos",
+    "defaultPrompt": [
+      "Add a Whop checkout for a monthly subscription to this app",
+      "Verify Whop webhooks and grant access when a payment succeeds",
+      "Migrate this Stripe integration to Whop"
+    ],
+    "brandColor": "#FA4616",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg"
+  }
+}
