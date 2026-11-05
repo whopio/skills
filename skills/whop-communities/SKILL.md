@@ -36,7 +36,7 @@ Whop chat renders inside your own product through the chat elements, authenticat
 3. **Always pass explicit `scoped_actions`.** An empty or missing list gives the token every permission your API key has, and the token goes to the browser.
 4. **Take `user_id` from your own session**, never from the request body. The token acts as that user.
 5. **Give `ChatSession` a token function, not a string.** A function is called again before the token expires (1 hour by default, 3 hours max); a string is never refreshed.
-6. **The user must exist on Whop first.** Enroll each of your users as a connected account with `accounts.create` and store `account.owner.id` (`user_...`). OAuth users skip this.
+6. **The user must exist on Whop first.** Enroll each of your users as a subaccount with `accounts.create` and store `account.owner.id` (`user_...`). OAuth users skip this.
 7. **Pick the chat type by who may read it.** Channels (`chat_feed_...`) follow product membership and have no member cap. DMs (`feed_...`) are private, up to 50 members. Support chats (`feed_...`) are one customer and your account, with an open/resolved inbox.
 8. **Create DMs and support chats with your `account_id`** so they land in your account's inbox and the DMs list filtered by `companyId`, not the user's unrelated Whop messages.
 9. **Don't poll for messages.** Subscribe to the `chat.message.created` webhook; use `messages.list` only for history.

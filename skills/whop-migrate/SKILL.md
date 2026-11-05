@@ -9,7 +9,7 @@ description: >-
   processor to Whop", "replace Stripe Checkout with Whop", "move subscribers to
   Whop", "update old Whop code", "@whop/api is shut down", "plans renamed to
   variants", "company_id vs account_id". NOT for: a new integration with no
-  payment code (whop-checkout), payouts (whop-payouts), connected accounts
+  payment code (whop-checkout), payouts (whop-payouts), subaccounts
   (whop-platforms), app auth (whop-apps).
 license: Apache-2.0
 metadata:

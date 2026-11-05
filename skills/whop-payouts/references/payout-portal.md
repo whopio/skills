@@ -1,6 +1,6 @@
 # Payout portal: embedded or hosted
 
-Let a connected account verify its identity, add payout methods and withdraw on its own. Embed Whop Elements in your app, or redirect to a Whop-hosted portal.
+Let a subaccount verify its identity, add payout methods and withdraw on its own. Embed Whop Elements in your app, or redirect to a Whop-hosted portal.
 
 | | Embedded (Wallet elements) | Hosted (account link) |
 |---|---|---|
@@ -97,7 +97,7 @@ The other Wallet surfaces: `ActionsElement` (deposit, send, withdraw, convert bu
 
 ### 3. Identity verification
 
-A connected account must verify its identity before it can withdraw. Mount `KycElement` under a `Verifications` handle, which takes a `getToken` callback (called before the element mounts) instead of an `accessToken` value. The full verification flow is in `whop-platforms`.
+A subaccount must verify its identity before it can withdraw. Mount `KycElement` under a `Verifications` handle, which takes a `getToken` callback (called before the element mounts) instead of an `accessToken` value. The full verification flow is in `whop-platforms`.
 
 ## Hosted
 

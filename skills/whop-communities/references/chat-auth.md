@@ -30,7 +30,7 @@ An account access token (only `account_id`, no `user_id`) acts as the account wi
 
 ## Sync your users
 
-The `user_id` must be a Whop user. Enroll each of your users as a connected account (the same flow as payouts; see `whop-platforms`):
+The `user_id` must be a Whop user. Enroll each of your users as a subaccount (the same flow as payouts; see `whop-platforms`):
 
 ```ts
 import { WhopClient } from "@whop/sdk";

@@ -48,7 +48,7 @@ The foundation for every Whop integration: which credential to use, how to set u
 
 | Credential | Acts as | Lives | Use when |
 |---|---|---|---|
-| Account API key | Your account (`biz_`) | Your server | Your backend works on your own business and its connected accounts. Most integrations need only this |
+| Account API key | Your account (`biz_`) | Your server | Your backend works on your own business and its subaccounts. Most integrations need only this |
 | App API key | Your app | Your server | Your app reaches every account that installed it (`whop-apps`) |
 | Account-scoped user token | One user inside one account | Minted on your server, used in your client | Your product has its own users who reach Whop without a Whop sign-in |
 | Account access token | Your account, narrowed | Minted on your server, used in your client | A client needs short-lived account access with no user attached, such as an embedded component |
@@ -196,7 +196,7 @@ Tool naming, prepare-and-confirm, what the plugin's connection excludes, and err
 | Memberships, access checks, cancellations, refunds, disputes, invoices | `whop-billing` |
 | Receive and verify webhooks | `whop-webhooks` |
 | Payouts, transfers, deposits, balances | `whop-payouts` |
-| Marketplace with connected accounts | `whop-platforms` |
+| Marketplace with subaccounts | `whop-platforms` |
 | App inside Whop, OAuth, iframe user tokens | `whop-apps` |
 | Chat, DMs, forums, courses | `whop-communities` |
 | Coming from Stripe or older Whop API names | `whop-migrate` |
@@ -216,7 +216,7 @@ If the same call fails twice, stop retrying it. Read the whole error (status, bo
 | Symptom | Cause | Fix |
 |---|---|---|
 | `401` | Key missing, wrong, or from the other environment | Load the key on the server; match sandbox keys to `WhopEnvironment.Sandbox` |
-| `403` | Key valid but lacks the permission, or the resource belongs to another account | Add the permission to the key (or the app's permissions); check the `account_id` you pass is yours or a connected account |
+| `403` | Key valid but lacks the permission, or the resource belongs to another account | Add the permission to the key (or the app's permissions); check the `account_id` you pass is yours or a subaccount |
 | `404` | Wrong ID prefix, numeric ID, wrong environment, or a Legacy-only route | Use the tag (`biz_`, `plan_`, `mem_`...); check the environment and the stability page |
 | `400` naming the version | Unknown `Api-Version-Date` | Use a date from the changelog |
 | `400` `idempotency_key_mismatch` | Same key, different request | New key for a new request |

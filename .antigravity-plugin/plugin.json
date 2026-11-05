@@ -3,7 +3,7 @@
   "name": "whop-developer",
   "displayName": "Whop Developer",
   "version": "0.4.0",
-  "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with connected accounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server.",
+  "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with subaccounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server.",
   "logo": "assets/icon.svg",
   "suggestedPrompts": [
     "Add a Whop checkout for a monthly subscription to this app",
@@ -25,6 +25,7 @@
     "subscriptions",
     "payouts",
     "marketplace",
+    "subaccounts",
     "connected-accounts"
   ]
 }

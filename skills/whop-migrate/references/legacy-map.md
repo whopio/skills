@@ -48,7 +48,7 @@ For raw HTTP integrations, also log every response that carries a `Deprecation` 
 | `client.companies.create({ parent_company_id, ... })` | `client.accounts.create({ email, title, metadata })` | Called with the platform's Account API key, the new account is created under that platform; there is no parent field |
 | `client.companies.update` | `client.accounts.update` | |
 | `GET /company` | `client.accounts.me()` (`GET /accounts/me`) | |
-| `client.withdrawals.create({ company_id, amount })` | `client.payouts.create({ account_id, amount, payout_method_id })` | `/withdrawals` list and create return `410` from `2026-08-25-1`; payout IDs keep `wdrl_`. Pass `Idempotency-Key` as a header |
+| `client.withdrawals.create({ company_id, amount })` | `client.payouts.createQuote(...)`, then `client.payouts.create({ account_id, amount, payout_method_id, quote_token })` | `/withdrawals` list and create return `410` from `2026-08-25-1`; payout IDs keep `wdrl_`. Pass `Idempotency-Key` as a header. `quote_token` is required from `2026-11-03` |
 | `client.topups.create` | `client.deposits.create({ destination, amount })` | `destination` is a `biz_` or `user_` ID |
 | `client.ledgerAccounts.retrieve` | `client.accounts.retrieve` (read `balances`) | Ledger accounts' Current successor is account balances |
 | `client.feeMarkups.list` | `client.accounts.fees.retrieve` / `client.accounts.fees.update` | |

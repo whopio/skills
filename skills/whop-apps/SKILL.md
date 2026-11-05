@@ -9,7 +9,7 @@ description: >-
   in my Whop app", "check access to this experience", "app permissions", "app
   installed webhook", "push notification to members", "Sign in with Whop",
   "x-whop-user-token is missing". NOT for: chat in your own site
-  (whop-communities), checkout links (whop-checkout), connected accounts
+  (whop-communities), checkout links (whop-checkout), subaccounts
   (whop-platforms), @whop/api code (whop-migrate).
 license: Apache-2.0
 metadata:

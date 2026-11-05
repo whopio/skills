@@ -58,6 +58,11 @@ Entries that break the most integrations:
 | `2026-08-21` | Payout statuses rebuilt; payout money fields become decimal strings; idempotency only in the `Idempotency-Key` header |
 | `2026-09-02-1` | Payments become native: `account_id`, money objects, singular list filters, `201 Created` on create |
 | `2026-10-09-1` | `POST /transfers` requires `type` (`balance` or `claim_link`) |
+| `2026-11-02-1` | A draft invoice's customer is fixed once set: an update with a different `member_id` (or `null`) returns `400`; void the draft and create a new invoice instead |
+| `2026-11-03` | `POST /payouts` requires `quote_token` from `POST /payouts/quotes`; without one it returns `400` `invalid_payout_quote` |
+| `2026-11-03-1` | Connected accounts are renamed subaccounts: `include_connected_accounts` becomes `include_subaccounts` on payment and dispute lists and summaries, and `covers_connected_account_negative_balances` becomes `covers_subaccount_negative_balances` in account preferences |
+
+The last three are newer than the `2026-10-28` that `@whop/sdk` 2.7.0 sends, so SDK code still uses the old names until you upgrade the SDK or override `apiVersionDate`.
 | `2026-10-27-1` | `/plans` becomes `/variants`; `billing_type` replaces the old billing field; `default_variant` on products |
 | `2026-10-27-2` | Every other resource says `variant_id` / `variant` instead of the old plan names |
 

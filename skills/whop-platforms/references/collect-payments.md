@@ -1,18 +1,18 @@
-# Collecting payments for connected accounts
+# Collecting payments for subaccounts
 
 Two models. Pick per product, not per platform.
 
 |  | Direct charge | Collect then transfer |
 |---|---|---|
-| Where the charge lands | The connected account | The platform |
-| Whop fees | Connected account | Platform |
-| Refunds and disputes | Connected account | Platform (merchant of record) |
+| Where the charge lands | The subaccount | The platform |
+| Whop fees | Subaccount | Platform |
+| Refunds and disputes | Subaccount | Platform (merchant of record) |
 | Your cut | `application_fee_amount`, fixed per unit | Whatever you don't transfer |
 | Use when | The seller should own the sale | Your backend decides how much and when each seller is paid |
 
 ## Direct charge with an application fee
 
-Create the checkout configuration with the connected account's `account_id` and an inline `variant`. Whop charges the buyer on the connected account and pays your platform the fee.
+Create the checkout configuration with the subaccount's `account_id` and an inline `variant`. Whop charges the buyer on the subaccount and pays your platform the fee.
 
 ```ts
 import { WhopClient } from "@whop/sdk";
@@ -36,7 +36,7 @@ const checkout = await whop.checkoutConfigurations.create({
 console.log(checkout.purchase_url);
 ```
 
-`initial_price: 10.0` is $10.00; the platform collects $1.23 and the connected account receives $8.77 before its Whop fees.
+`initial_price: 10.0` is $10.00; the platform collects $1.23 and the subaccount receives $8.77 before its Whop fees.
 
 `application_fee_amount`:
 
@@ -44,7 +44,7 @@ console.log(checkout.purchase_url);
 - Must be positive and below the initial price (one-time) or renewal price (recurring).
 - Applies to later payments on recurring variants too.
 - Collection is capped to what is left of the proceeds; it can't exceed the captured amount.
-- Only valid on a connected account that has a parent, so the checkout must be created on the seller's `biz_`, not your own.
+- Only valid on a subaccount that has a parent, so the checkout must be created on the seller's `biz_`, not your own.
 
 A percentage fee is your arithmetic: for 10% of a $49.00 price send `4.90`. Round to the currency's minor unit.
 
@@ -65,7 +65,7 @@ Before transferring:
 
 ## Platform-wide fee settings
 
-`accounts.fees.update({ account_id, ... })` changes an account's fee schedule. `child_markups` sets default markups for connected accounts (available on accounts without a parent), `markups` sets them on one connected account, and `covered_payout_fees` chooses which payout fees the platform covers for its connected accounts. Read the current schedule with `accounts.fees.retrieve` before changing it, and confirm the change with the user: it affects every future payment.
+`accounts.fees.update({ account_id, ... })` changes an account's fee schedule. `child_markups` sets default markups for subaccounts (available on accounts without a parent), `markups` sets them on one subaccount, and `covered_payout_fees` chooses which payout fees the platform covers for its subaccounts. Read the current schedule with `accounts.fees.retrieve` before changing it, and confirm the change with the user: it affects every future payment.
 
 ## Sources
 

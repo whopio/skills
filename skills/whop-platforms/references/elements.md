@@ -1,6 +1,6 @@
 # Verifications and Dashboard elements
 
-Embed onboarding and a seller dashboard in your own app. Install `@whop/elements` and `@whop/elements-react` (React), or load `https://cdn.whop.com/elements/amber/elements.js` and call `window.WhopElements()` (plain JavaScript). Both handles below take `accountId`: the connected account's `biz_` ID.
+Embed onboarding and a seller dashboard in your own app. Install `@whop/elements` and `@whop/elements-react` (React), or load `https://cdn.whop.com/elements/amber/elements.js` and call `window.WhopElements()` (plain JavaScript). Both handles below take `accountId`: the subaccount's `biz_` ID.
 
 ## Credentials
 

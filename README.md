@@ -14,7 +14,7 @@ Each skill follows the [Agent Skills specification](https://agentskills.io/speci
 | [`whop-billing`](skills/whop-billing) | Manage what happens after the sale: memberships, access checks, cancellations, invoices, refunds, disputes |
 | [`whop-webhooks`](skills/whop-webhooks) | Receive and verify webhook events and fulfill orders exactly once |
 | [`whop-payouts`](skills/whop-payouts) | Move money out: transfers, payouts, the payout portal, ledgers |
-| [`whop-platforms`](skills/whop-platforms) | Run a marketplace with connected accounts, onboarding and verification |
+| [`whop-platforms`](skills/whop-platforms) | Run a marketplace with subaccounts, onboarding and verification |
 | [`whop-apps`](skills/whop-apps) | Build apps that run inside Whop: app views, user auth, permissions, OAuth |
 | [`whop-communities`](skills/whop-communities) | Embed chat and DMs, sync users, and work with channels, forums and courses |
 | [`whop-migrate`](skills/whop-migrate) | Move to Whop from Stripe and others, or from older Whop API names |

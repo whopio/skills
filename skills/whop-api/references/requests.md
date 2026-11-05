@@ -71,7 +71,7 @@ OAuth endpoints use the OAuth-standard `error` and `error_description` instead.
 |---|---|---|
 | `400` | Invalid shape or missing field | Check required params, enum values, IDs, nested shape |
 | `401` | No valid authentication | Check the credential is present, valid, server-side, same environment |
-| `403` | Valid credential, action not allowed | Check key permissions, app permissions, OAuth scopes, account ownership, connected-account context |
+| `403` | Valid credential, action not allowed | Check key permissions, app permissions, OAuth scopes, account ownership, subaccount context |
 | `404` | Resource or route not found | Check the route, API version, and tag prefix |
 | `409` | Conflicts with current state | Re-read the resource; retry only if the action still applies |
 | `410` | Endpoint retired at this version | Move to the successor named in the changelog |

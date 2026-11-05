@@ -17,7 +17,7 @@ TEMPLATE = ROOT / "scripts" / "rules.template.md"
 RULES = ROOT / "rules"
 DESCRIPTION = (
     "Building on Whop: @whop/sdk, Whop checkout and payments, webhooks, memberships and access checks, "
-    "payouts, connected accounts, Whop apps and chat"
+    "payouts, subaccounts (connected accounts), Whop apps and chat"
 )
 HEADER = "<!-- Generated from scripts/rules.template.md by scripts/build-rules.py. Edit the template, not this file. -->\n\n"
 

@@ -10,7 +10,7 @@ Lifecycle: **create a draft** (charges nothing, emails no one), then **issue** (
 |---|---|
 | `account_id` | Required |
 | `items` | 1 to 50, each `{ variant_id, quantity? }` or an inline `{ variant: { product_id, billing_type, initial_price, currency }, quantity? }` (prices in major units). Inline variants need `plan:create` |
-| `member_id` or `email_address` (+ `customer_name`) | The customer; one of the pair. Optional on a draft, required to issue |
+| `member_id` or `email_address` (+ `customer_name`) | The customer; one of the pair. Optional on a draft, required to issue. From API version `2026-11-02-1`, once a draft has a customer, updating it with a different `member_id` (or `null`) returns `400`: void the draft and create a new invoice to bill someone else |
 | `billing_address` or `mailing_address_id` | `billing_address` is `{ line1, city, postal_code, country (ISO alpha-2), state?, line2?, name?, phone? }`. Needed to issue when tax applies |
 | `due_at` | ISO 8601. Sets `overdue` and reminder dates |
 | `payment_method_id` | A saved `payt_` of the customer, charged off session on issue or send |

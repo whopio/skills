@@ -3,7 +3,7 @@
 ## Accounts and people
 
 - **Account** (`biz_`): a business on Whop. Owns API keys, products, webhooks and money. Older surfaces call it a company; same object.
-- **Connected account**: an account you enroll and act for when you run a marketplace (also called a sub-merchant). See `whop-platforms`.
+- **Subaccount**: an account you enroll and act for when you run a marketplace (also called a sub-merchant). See `whop-platforms`.
 - **User** (`user_`): a person with a Whop login. Can buy from many accounts and help run one.
 - **Team member**: a user granted a role on an account.
 - **Member**: a user seen as a customer of an account, across all their purchases.
