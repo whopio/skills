@@ -23,7 +23,7 @@ Checkout creates a **membership** linking a user to a product. Your server asks 
 ## Before you start
 
 1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
-2. Fetch `https://docs.whop.com/developer/guides/memberships.md` (plus `invoices.md`, `refunds-and-disputes.md` or `manage-fraud.md` under `https://docs.whop.com/developer/guides/` for those tasks) and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+2. Fetch `https://docs.whop.com/developer/guides/memberships.md` (plus `invoices.md`, `refunds-and-disputes.md` or `manage-fraud.md` under `https://docs.whop.com/developer/guides/` for those tasks). If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
 3. Know how you identify the customer: a Whop user ID (`user_...`) stored on your user record, a membership ID (`mem_...`) or license key, or a member ID (`mber_...`).
 4. Get the account ID (`biz_...`) and the product ID (`prod_...`) you gate on.
 5. Every call here runs on your server with an API key. Set that up with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
@@ -176,7 +176,11 @@ The `whop` MCP tools act on the signed-in user's **live** account and can't reac
 3. Refund a sandbox payment and confirm `refunded_amount` and the `refund.created` webhook.
 4. Create an invoice, send it, and pay the emailed link with a test card; confirm `payment.succeeded` for its `pay_` ID.
 
+When you're done, tell the user what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first), which of these checks you ran, and what is still unverified.
+
 ## Errors
+
+If the same call fails twice, stop retrying it. Read the whole error (status, body and request ID), check the docs page and the installed SDK types, then change the request or the approach.
 
 | Symptom | Cause | Fix |
 |---|---|---|

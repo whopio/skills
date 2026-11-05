@@ -24,7 +24,7 @@ A Whop app installs into a business's Whop and renders inside an iframe on `whop
 ## Before you start
 
 1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
-2. Fetch `https://docs.whop.com/developer/apps/overview.md`, `https://docs.whop.com/developer/guides/authentication.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+2. Fetch `https://docs.whop.com/developer/apps/overview.md` and `https://docs.whop.com/developer/guides/authentication.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
 3. Get the **App API key**: dashboard → **Apps** → your app → the hidden `WHOP_API_KEY` under **Environment variables**. It reaches every account that installed the app. Set up the client with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY })` in server-only code (`https://docs.whop.com/developer/quickstart.md`).
 4. Decide where the app runs. `whop apps init` scaffolds an app hosted by Whop (`*.whop.site`); otherwise you host it and set its URL in the app's **Hosting** section.
 5. The `whop` CLI has no sandbox: every command runs in production.
@@ -214,7 +214,11 @@ Use `account_id: "biz_..."` instead of `experience_id` to reach the team (dashbo
 4. Uninstall and reinstall on the test account; confirm one `app_installation.deleted` then one `app_installation.created` with your `external_id` still set.
 5. Send a notification to your test experience with `user_ids` set to your own user.
 
+When you're done, tell the user what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first), which of these checks you ran, and what is still unverified.
+
 ## Errors
+
+If the same call fails twice, stop retrying it. Read the whole error (status, body and request ID), check the docs page and the installed SDK types, then change the request or the approach.
 
 | Symptom | Cause | Fix |
 |---|---|---|

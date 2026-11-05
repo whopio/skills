@@ -82,7 +82,7 @@ If the `whop` MCP tools are connected, use them to look things up for the code y
 
 ## Finish
 
-Report what changed, which environment it targets (sandbox or production), what you ran to check it, and what is still unverified, such as a webhook never delivered by Whop or a flow only tested with sandbox cards.
+Report what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first), what you ran to check it, and what is still unverified, such as a webhook never delivered by Whop or a flow only tested with sandbox cards.
 
 ## References
 

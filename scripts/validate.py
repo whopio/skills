@@ -122,6 +122,9 @@ def check_skill(skill_dir: Path, version: str) -> None:
     if isinstance(metadata, dict) and any(not isinstance(v, str) for v in metadata.values()):
         error(skill_md, "metadata values must be strings (quote them)")
 
+    if name != "whop":
+        check_skill_conventions(skill_md, body)
+
     line_count = skill_md.read_text().count("\n") + 1
     if line_count > HARD_LINE_LIMIT:
         error(skill_md, f"{line_count} lines (hard limit {HARD_LINE_LIMIT})")
@@ -171,6 +174,23 @@ def check_skill(skill_dir: Path, version: str) -> None:
             for line_number, line in enumerate(text.splitlines(), start=1):
                 if pattern in line:
                     error(f"{relative(md_file)}:{line_number}", f"banned stale pattern {pattern!r}")
+
+
+LOOP_LINE = "If the same call fails twice, stop retrying it."
+REPORT_LINE = "When you're done, tell the user what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first)"
+
+
+def check_skill_conventions(skill_md: Path, body: str) -> None:
+    """The agent-behavior lines every workflow skill carries (see AGENTS.md, Body)."""
+    errors_section = re.search(r"^## Errors\n\n(.*?)(?=^## |\Z)", body, re.M | re.S)
+    if not errors_section or not errors_section.group(1).startswith(LOOP_LINE):
+        error(skill_md, f"## Errors must open with: {LOOP_LINE!r}")
+    verify_section = re.search(r"^## Verify\n(.*?)(?=^## |\Z)", body, re.M | re.S)
+    if not verify_section or REPORT_LINE not in verify_section.group(1):
+        error(skill_md, f"## Verify must end by telling the agent to report: {REPORT_LINE!r}")
+    before = re.search(r"^## Before you start\n(.*?)(?=^## )", body, re.M | re.S)
+    if before and re.search(r"(Fetch|fetch)[^\n]*versioning\.md[^\n]*If they disagree", before.group(1)):
+        error(skill_md, "fetch the versioning changelog on demand, not in the upfront fetch list")
 
 
 def load_json(path: Path) -> dict | None:

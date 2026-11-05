@@ -23,7 +23,7 @@ Two jobs: moving an existing integration from Stripe or another processor onto W
 
 ## Before you start
 
-1. Fetch `https://docs.whop.com/developer/api/migrate-from-previous-versions.md`, `https://docs.whop.com/api-reference/stability.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+1. Fetch `https://docs.whop.com/developer/api/migrate-from-previous-versions.md` and `https://docs.whop.com/api-reference/stability.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
 2. Find out which job this is: payment code from another processor, old Whop code, or both. Look before asking: the scans below answer it.
 3. Set up a sandbox client first (`whop-api`). Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`). Migrate and test against `https://sandbox-api.whop.com/api/v1` before touching production.
 4. Check the installed `@whop/sdk` version. Every name in this skill was checked against 2.7.0; on another version, confirm a name in the package's `reference.md` before using it.
@@ -161,7 +161,11 @@ The `whop` MCP tools act on the signed-in user's **live** account and can't reac
 4. Check a migrated or test membership with `users.checkAccess` and confirm cancellation and refund paths against sandbox data.
 5. Grep request logs for responses with a `Deprecation` header; there should be none.
 
+When you're done, tell the user what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first), which of these checks you ran, and what is still unverified.
+
 ## Errors
+
+If the same call fails twice, stop retrying it. Read the whole error (status, body and request ID), check the docs page and the installed SDK types, then change the request or the approach.
 
 | Symptom | Cause | Fix |
 |---|---|---|

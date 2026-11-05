@@ -86,12 +86,12 @@ Aim for under 300 lines; 500 is the hard limit. The test for what stays in `SKIL
 Sections, in this order:
 
 1. `# Title` and one sentence on what the skill does.
-2. `## Before you start` — what must be true first. Step 1 inspects the project (installed SDK version, framework, sandbox or production). Then the docs to fetch, the client (via `whop-api`, with a fallback), sandbox keys and which credential type. The last step says sibling skills are optional.
+2. `## Before you start` — what must be true first. Step 1 inspects the project (installed SDK version, framework, sandbox or production). Then the docs to fetch (only the guides the task needs; the versioning changelog is read on demand, when pinning or upgrading a version or when a response doesn't match), the client (via `whop-api`, with a fallback), sandbox keys and which credential type. The last step says sibling skills are optional.
 3. `## Rules` — the numbered gotchas that cause real bugs. These are the most valuable lines in the skill.
 4. `## Pick a path` — a decision table or tree from the user's goal to a workflow.
 5. One `##` section per workflow: numbered steps with a minimal, correct snippet.
-6. `## Verify` — how to prove it works in sandbox before going live.
-7. `## Errors` — symptom → cause → fix.
+6. `## Verify` — how to prove it works in sandbox before going live. It ends by telling the agent to report what changed, which environment it targets, which checks ran, and what is still unverified.
+7. `## Errors` — symptom → cause → fix. It opens with the rule that stops retry loops: after the same call fails twice, read the whole error and the docs, then change the approach. `validate.py` checks these lines.
 8. `## References` — every file in `references/` with one line on when to read it, ending with `references/skill-feedback.md`.
 
 ### Code

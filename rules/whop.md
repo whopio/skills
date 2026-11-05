@@ -18,3 +18,5 @@ Load the matching `whop-*` skill before writing Whop code (or the `whop` skill t
 - **Send an `Idempotency-Key`** (`{ idempotencyKey }` as the SDK's second argument) on calls that move money.
 - **Use current names:** `variants` (not plans), `billing_type` (not `plan_type`), `accounts` and `account_id` (not companies or `company_id`), `payouts` (not withdrawals), `deposits` (not top-ups), `checkoutConfigurations` (not checkout sessions), `@whop/elements-react` (not `@whop/checkout`), and `@whop/sdk` (not `@whop/api`).
 - **The Whop MCP server is the live production account.** Use it to look up IDs and read the docs, not to test code. When a tool returns a prepared preview, show it to the user and run it only after they approve.
+- **Don't loop.** If the same call fails twice, stop retrying it: read the whole error (status, body, request ID), check the docs page and the installed SDK types, then change the request or the approach.
+- **Finish with a report:** what changed, which environment it targets (sandbox or production; if undecided, say so and recommend sandbox first), which checks you ran, and what is still unverified.
