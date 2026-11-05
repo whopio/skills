@@ -1,19 +1,15 @@
 ---
 name: whop-payouts
 description: >-
-  Move money out of Whop balances: transfers between balances, payouts to banks
-  and PayPal, payout quotes and cancels, payout methods, the embedded payout
-  portal (Wallet element or hosted payouts_portal link), adding funds with
-  deposits, settlement currency, ledgers, financial activity and stats. Use
-  when: "pay my sellers", "send money to a connected account", "transfer from
-  my platform balance", "create a payout", "withdraw to bank", "connect PayPal
-  for payouts", "let users manage their payouts", "embed a payout portal",
-  "top up my balance", "show balance and activity", "reconcile payouts".
-  Chain with: whop-platforms to create and verify the connected accounts you
-  pay, whop-webhooks for payout and transfer events, whop-api for client setup.
-  NOT for: onboarding sellers or KYC (use whop-platforms), charging buyers (use
-  whop-checkout), refunds and disputes (use whop-billing), moving from Stripe
-  Connect (use whop-migrate).
+  Move money out of Whop balances: transfers between balances, payouts to bank
+  or PayPal, payout methods, the payout portal (Wallet element or hosted link),
+  deposits, settlement currency, ledgers, balances and stats. Use when: "pay my
+  sellers", "send money to a connected account", "create a payout", "withdraw
+  to bank", "PayPal payouts", "embed a payout portal", "let users manage their
+  payouts", "top up my balance", "show balance and activity", "reconcile
+  payouts". NOT for: onboarding or KYC (whop-platforms), charging buyers
+  (whop-checkout), refunds (whop-billing), moving from Stripe Connect
+  (whop-migrate).
 license: Apache-2.0
 metadata:
   author: whop
@@ -26,10 +22,12 @@ Money leaves a Whop balance two ways: a **transfer** moves it to another Whop ba
 
 ## Before you start
 
-1. Fetch `https://docs.whop.com/developer/platforms/manual-payouts.md`, `https://docs.whop.com/developer/payouts/overview.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs.
-2. Set up the client with `whop-api`. Money calls use an **Account API key**, which is a secret: keep it on your server. Browsers get a short-lived access token instead (see [references/payout-portal.md](references/payout-portal.md)).
-3. Build and test against sandbox first: `https://sandbox-api.whop.com/api/v1`, or `environment: WhopEnvironment.Sandbox` on the client.
-4. Know who you are paying. A recipient needs a Whop account (a connected account or a user) before a transfer, and a completed verification plus a payout method before a payout. Creating and verifying connected accounts is `whop-platforms`.
+1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
+2. Fetch `https://docs.whop.com/developer/platforms/manual-payouts.md`, `https://docs.whop.com/developer/payouts/overview.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+3. Set up the client with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`). Money calls use an **Account API key**, which is a secret: keep it on your server. Browsers get a short-lived access token instead (see [references/payout-portal.md](references/payout-portal.md)).
+4. Build and test against sandbox first: `https://sandbox-api.whop.com/api/v1`, or `environment: WhopEnvironment.Sandbox` on the client.
+5. Know who you are paying. A recipient needs a Whop account (a connected account or a user) before a transfer, and a completed verification plus a payout method before a payout. Creating and verifying connected accounts is `whop-platforms`.
+6. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
 
@@ -212,3 +210,4 @@ More cases in [references/payout-methods.md](references/payout-methods.md) and [
 - [references/payout-methods.md](references/payout-methods.md): read when an account has no payout method, you need required bank fields, or you want PayPal login.
 - [references/payout-portal.md](references/payout-portal.md): read when embedding the Wallet elements or redirecting to the hosted payouts portal.
 - [references/balances-and-reporting.md](references/balances-and-reporting.md): read when showing balances, building a statement, reconciling, charting revenue, setting a settlement currency, or touching swaps and cards.
+- [references/skill-feedback.md](references/skill-feedback.md): read when the user says this skill gave wrong, outdated or missing guidance, or the docs contradicted it during the task.

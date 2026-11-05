@@ -140,6 +140,7 @@ export function buildContext(info) {
   }
 
   lines.push(
+    "- Skills: for payments, subscriptions, paywalls, access checks, webhooks, payouts, marketplaces, chat or a Whop app in this project, load the matching `whop-*` skill (or the `whop` skill to pick one) before writing code, even if the user doesn't say \"Whop\".",
     "- The `whop` MCP server acts on the signed-in user's live (production) Whop account and cannot reach sandbox. Use it to look things up (IDs, products, webhooks, payment status) and to read the docs (`docs_search`, then `docs_query`), not to test code. Call `connection_status` first; pass `account_id` (`biz_...`) explicitly, plus `intent` (the user's request) and `intent_id` (one UUID per user message) on every operation tool. Consequential tools return `prepared: true` with an `mcp_confirmation_token`: show the user the preview and only call again with the token and a stable `idempotency_key` after they approve.",
     "- Commands: /whop-developer:connect (MCP sign-in vs the project's API key), /whop-developer:setup (SDK, env and a sandbox check), /whop-developer:test-webhook (signed test events against a local handler), /whop-developer:audit (integration review).",
   );

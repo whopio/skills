@@ -1,19 +1,15 @@
 ---
 name: whop-billing
 description: >-
-  Run Whop billing after the sale: check on the server whether a user has
-  access, read and list memberships and members, cancel at period end or
-  immediately, pause, resume and extend subscriptions, store membership
-  metadata, validate license keys, create and send invoices or charge them to a
-  saved method, refund payments, respond to disputes and dispute alerts, and
-  write fraud rules. Use when: "check if user has access", "only paying members
-  can see this", "cancel subscription at end of period", "pause a membership",
-  "refund a Whop payment", "respond to a chargeback", "send an invoice",
-  "block risky payments". Chain with: whop-webhooks to react to membership,
-  payment and dispute events, whop-checkout for the purchase itself, whop-api
-  for client setup. NOT for: creating prices or checkout pages (use
-  whop-checkout), verifying webhook signatures (use whop-webhooks), paying out
-  sellers (use whop-payouts), access inside a Whop app iframe (use whop-apps).
+  Manage Whop customers after the sale: server-side access checks, memberships
+  and members, cancel, pause, resume or extend subscriptions, license keys,
+  invoices, refunds, disputes and chargebacks, fraud rules. Use when: "check if
+  user has access", "only paying members can see this", "gate content", "cancel
+  subscription at period end", "pause a membership", "refund a Whop payment",
+  "respond to a chargeback", "send an invoice", "validate a license key",
+  "block risky payments". NOT for: creating prices or checkout (whop-checkout),
+  verifying webhooks (whop-webhooks), paying sellers (whop-payouts), access
+  inside a Whop app (whop-apps).
 license: Apache-2.0
 metadata:
   author: whop
@@ -26,10 +22,12 @@ Checkout creates a **membership** linking a user to a product. Your server asks 
 
 ## Before you start
 
-1. Fetch `https://docs.whop.com/developer/guides/memberships.md` (plus `invoices.md`, `refunds-and-disputes.md` or `manage-fraud.md` under `https://docs.whop.com/developer/guides/` for those tasks) and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs.
-2. Know how you identify the customer: a Whop user ID (`user_...`) stored on your user record, a membership ID (`mem_...`) or license key, or a member ID (`mber_...`).
-3. Get the account ID (`biz_...`) and the product ID (`prod_...`) you gate on.
-4. Every call here runs on your server with an API key. Set that up with `whop-api`.
+1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
+2. Fetch `https://docs.whop.com/developer/guides/memberships.md` (plus `invoices.md`, `refunds-and-disputes.md` or `manage-fraud.md` under `https://docs.whop.com/developer/guides/` for those tasks) and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+3. Know how you identify the customer: a Whop user ID (`user_...`) stored on your user record, a membership ID (`mem_...`) or license key, or a member ID (`mber_...`).
+4. Get the account ID (`biz_...`) and the product ID (`prod_...`) you gate on.
+5. Every call here runs on your server with an API key. Set that up with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
+6. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
 
@@ -199,3 +197,4 @@ More in [references/troubleshooting.md](references/troubleshooting.md).
 - [references/disputes.md](references/disputes.md): read when handling refunds, disputes, evidence, or dispute alerts.
 - [references/fraud.md](references/fraud.md): read when writing payment rules or reviewing held payments.
 - [references/troubleshooting.md](references/troubleshooting.md): read when a billing call fails or access looks wrong.
+- [references/skill-feedback.md](references/skill-feedback.md): read when the user says this skill gave wrong, outdated or missing guidance, or the docs contradicted it during the task.

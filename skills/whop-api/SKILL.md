@@ -1,20 +1,16 @@
 ---
 name: whop-api
 description: >-
-  Set up and call the Whop API: pick the credential (API key, user or account
-  token, iframe token, OAuth), configure @whop/sdk in TypeScript, Python or Ruby
-  for sandbox or production, read IDs and dollar amounts, pin versions, send
-  idempotency keys, paginate, handle errors, look up live docs, and use the
-  Whop MCP server's tools safely. Use when: "set up the Whop SDK", "Whop API
-  key", "use the Whop sandbox", "which Whop token do I need", "Whop API returns
-  401", "Whop 403 forbidden", "Api-Version-Date", "Whop idempotency key", "what
-  is a biz_ / plan_ ID", "Whop MCP", "find my product ID". Chain with:
-  whop-checkout to take a payment, whop-webhooks to receive events,
-  whop-billing for memberships after the sale. NOT for: taking payments (use
-  whop-checkout), webhook handlers (use whop-webhooks), payouts and transfers
-  (use whop-payouts), connected accounts (use whop-platforms), apps inside
-  Whop, OAuth flows and iframe auth (use whop-apps), chat (use
-  whop-communities), Stripe or old Whop API names (use whop-migrate).
+  Set up the Whop API: credentials (API keys, user tokens, OAuth tokens),
+  @whop/sdk in TypeScript, Python or Ruby, sandbox vs production, IDs, dollar
+  amounts, versions, idempotency keys, pagination, errors, and the Whop MCP
+  server. Use when: "set up the Whop SDK", "Whop API key", "Whop sandbox",
+  "which Whop token do I need", "Whop 401", "Whop 403 forbidden",
+  "Api-Version-Date", "idempotency key", "what is a biz_ ID", "find my Whop
+  product ID", "Whop MCP". NOT for: taking payments (whop-checkout), webhooks
+  (whop-webhooks), memberships (whop-billing), payouts (whop-payouts),
+  marketplaces (whop-platforms), apps inside Whop or Sign in with Whop
+  (whop-apps), chat (whop-communities), old Whop or Stripe code (whop-migrate).
 license: Apache-2.0
 metadata:
   author: whop
@@ -27,10 +23,12 @@ The foundation for every Whop integration: which credential to use, how to set u
 
 ## Before you start
 
-1. Fetch `https://docs.whop.com/developer/quickstart.md`, `https://docs.whop.com/developer/guides/auth-scoping.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs.
-2. Confirm what is being built. Building Whop into your own product starts with an API key. Building an app that runs inside Whop starts with the Whop CLI, not an API key; that is `whop-apps`.
-3. Confirm the environment. Sandbox (`https://sandbox.whop.com`, API `https://sandbox-api.whop.com/api/v1`) and production (`https://whop.com`, API `https://api.whop.com/api/v1`) share nothing: separate dashboards, keys, webhooks and data.
-4. Confirm the language. The docs show SDKs for TypeScript (`@whop/sdk`), Python (`whop-sdk`) and Ruby (`whop_sdk`).
+1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
+2. Fetch `https://docs.whop.com/developer/quickstart.md`, `https://docs.whop.com/developer/guides/auth-scoping.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+3. Confirm what is being built. Building Whop into your own product starts with an API key. Building an app that runs inside Whop starts with the Whop CLI, not an API key; that is `whop-apps`.
+4. Confirm the environment. Sandbox (`https://sandbox.whop.com`, API `https://sandbox-api.whop.com/api/v1`) and production (`https://whop.com`, API `https://api.whop.com/api/v1`) share nothing: separate dashboards, keys, webhooks and data.
+5. Confirm the language. The docs show SDKs for TypeScript (`@whop/sdk`), Python (`whop-sdk`) and Ruby (`whop_sdk`).
+6. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
 
@@ -229,3 +227,4 @@ Tool naming, prepare-and-confirm, what the plugin's connection excludes, and err
 - [references/requests.md](references/requests.md): read for idempotency details, pagination in each language, error bodies, retries and rate limits.
 - [references/concepts.md](references/concepts.md): read when you meet an unfamiliar object or ID prefix.
 - [references/mcp.md](references/mcp.md): read before calling Whop MCP tools: when to use them instead of SDK code, connecting, prepare-and-confirm, idempotency, and errors.
+- [references/skill-feedback.md](references/skill-feedback.md): read when the user says this skill gave wrong, outdated or missing guidance, or the docs contradicted it during the task.

@@ -8,6 +8,7 @@ Each skill follows the [Agent Skills specification](https://agentskills.io/speci
 
 | Skill | Use it to |
 |---|---|
+| [`whop`](skills/whop) | Start here: it inspects your project and picks the skill for your goal, even when you don't say "Whop" |
 | [`whop-api`](skills/whop-api) | Set up credentials and the SDK, use sandbox, and handle IDs, money units, pagination, errors and versioning |
 | [`whop-checkout`](skills/whop-checkout) | Take a payment: checkout links, the Checkout element, Express Checkout, products and variants |
 | [`whop-billing`](skills/whop-billing) | Manage what happens after the sale: memberships, access checks, cancellations, invoices, refunds, disputes |
@@ -18,7 +19,9 @@ Each skill follows the [Agent Skills specification](https://agentskills.io/speci
 | [`whop-communities`](skills/whop-communities) | Embed chat and DMs, sync users, and work with channels, forums and courses |
 | [`whop-migrate`](skills/whop-migrate) | Move to Whop from Stripe and others, or from older Whop API names |
 
-You don't call skills by name. Describe what you want ("add a Whop webhook that fulfills the order when a payment succeeds") and the agent loads the matching skill.
+You don't call skills by name. Describe what you want ("add a Whop webhook that fulfills the order when a payment succeeds") and the agent loads the matching skill. Each skill works when installed alone; it falls back to the Whop docs where it would hand off to a skill you don't have.
+
+If a skill gives wrong or outdated guidance, tell your agent. It drafts a [skill-feedback issue](https://github.com/whopio/skills/issues/new?template=skill-feedback.md) with keys, IDs and customer data removed, and posts it only after you approve the text.
 
 ## Commands, agents and checks
 

@@ -154,6 +154,6 @@ GraphQL `camelCase` fields (`hasAccess`) are `snake_case` (`has_access`). Stored
 - https://docs.whop.com/developer/guides/memberships.md
 - https://docs.whop.com/developer/guides/webhooks.md
 - https://docs.whop.com/developer/guides/embed-checkout.md
-- https://docs.whop.com/developer/platforms/enroll-connected-accounts.md
+- https://docs.whop.com/developer/platforms/enroll-subaccounts.md
 - https://docs.whop.com/developer/platforms/render-payout-portal.md
 - https://docs.whop.com/developer/guides/ai_and_mcp.md

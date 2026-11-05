@@ -1,0 +1,5 @@
+interface:
+  display_name: "Whop"
+  short_description: "Find the right Whop skill for what you're building"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop to look at my project and tell me which Whop skills I need to sell a monthly subscription and gate content on it."

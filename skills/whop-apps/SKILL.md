@@ -1,20 +1,16 @@
 ---
 name: whop-apps
 description: >-
-  Build apps that run inside Whop and install from the Whop App Store:
-  scaffold and deploy with the whop CLI, configure experience and dashboard
-  views, verify the x-whop-user-token and check access with users.checkAccess,
-  request permissions, track installs with app_installation webhooks, run cron
-  jobs, send push notifications, upload files, Sign in with Whop, iframe SDK,
-  Frosted UI, React Native. Use when: "build a Whop app", "whop apps init",
-  "who is the user in my Whop app", "check access to this experience",
-  "app permissions", "app installed webhook", "push notification to
-  members", "x-whop-user-token is missing", "run my app on a schedule".
-  Chain with: whop-api for client setup, whop-webhooks for deliveries,
-  whop-checkout for in-app purchases, whop-communities for chat, forums and
-  courses. NOT for: embedding chat in your own site (use whop-communities),
-  checkout links (use whop-checkout), connected accounts (use
-  whop-platforms), moving off @whop/api (use whop-migrate).
+  Build apps that run inside Whop: scaffold and deploy with the whop CLI,
+  experience and dashboard views, verify the x-whop-user-token, check access
+  with users.checkAccess, permissions, app install webhooks, scheduled runs,
+  push notifications, file uploads, Sign in with Whop (OAuth), iframe SDK,
+  Frosted UI. Use when: "build a Whop app", "whop apps init", "who is the user
+  in my Whop app", "check access to this experience", "app permissions", "app
+  installed webhook", "push notification to members", "Sign in with Whop",
+  "x-whop-user-token is missing". NOT for: chat in your own site
+  (whop-communities), checkout links (whop-checkout), connected accounts
+  (whop-platforms), @whop/api code (whop-migrate).
 license: Apache-2.0
 metadata:
   author: whop
@@ -27,10 +23,12 @@ A Whop app installs into a business's Whop and renders inside an iframe on `whop
 
 ## Before you start
 
-1. Fetch `https://docs.whop.com/developer/apps/overview.md`, `https://docs.whop.com/developer/guides/authentication.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs.
-2. Get the **App API key**: dashboard → **Apps** → your app → the hidden `WHOP_API_KEY` under **Environment variables**. It reaches every account that installed the app. Set up the client with `whop-api`.
-3. Decide where the app runs. `whop apps init` scaffolds an app hosted by Whop (`*.whop.site`); otherwise you host it and set its URL in the app's **Hosting** section.
-4. The `whop` CLI has no sandbox: every command runs in production.
+1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
+2. Fetch `https://docs.whop.com/developer/apps/overview.md`, `https://docs.whop.com/developer/guides/authentication.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+3. Get the **App API key**: dashboard → **Apps** → your app → the hidden `WHOP_API_KEY` under **Environment variables**. It reaches every account that installed the app. Set up the client with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY })` in server-only code (`https://docs.whop.com/developer/quickstart.md`).
+4. Decide where the app runs. `whop apps init` scaffolds an app hosted by Whop (`*.whop.site`); otherwise you host it and set its URL in the app's **Hosting** section.
+5. The `whop` CLI has no sandbox: every command runs in production.
+6. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
 
@@ -237,3 +235,4 @@ Use `account_id: "biz_..."` instead of `experience_id` to reach the team (dashbo
 - [references/notifications-and-files.md](references/notifications-and-files.md): read when targeting specific users, custom icons, or uploading files and multipart uploads.
 - [references/oauth.md](references/oauth.md): read when adding Sign in with Whop or acting as a user outside the iframe.
 - [references/client-sdks.md](references/client-sdks.md): read when using the iframe SDK, in-app purchases, Frosted UI, or building a React Native app.
+- [references/skill-feedback.md](references/skill-feedback.md): read when the user says this skill gave wrong, outdated or missing guidance, or the docs contradicted it during the task.

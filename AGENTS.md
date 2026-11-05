@@ -9,6 +9,7 @@ Agent skills for **developers building on Whop**: taking payments, verifying web
 Operating a live Whop business by hand ("refund this customer", "launch my store", "run ads") is **not** this repo's job. That lives in [`whopio/plugins`](https://github.com/whopio/plugins) and the `whop` CLI's own skill (`whop skills add`). Skills here hand off to those instead of duplicating them.
 
 ```
+whop              router: inspect the project, pick the skill for the goal, docs fallbacks when a skill isn't installed
 whop-api          foundation: credentials, SDK setup, sandbox, concepts and IDs, money units, versioning, idempotency, pagination, errors
 whop-checkout     take a payment: checkout links, Checkout element, Express Checkout, card fields, wallets, saved methods, products and variants, iOS, React Native
 whop-billing      after the sale: memberships, access checks, cancellations, invoices, refunds, disputes, fraud
@@ -20,7 +21,7 @@ whop-communities  chat and community: Chat and DMs elements, chat auth and user 
 whop-migrate      move to Whop from Stripe and others, or from older Whop API names
 ```
 
-Every other skill assumes `whop-api`'s setup. A skill that needs an API client says "set up the client with `whop-api`" rather than repeating it.
+Every other skill assumes `whop-api`'s setup. A skill that needs an API client says "set up the client with `whop-api`", followed by a one-line fallback for when that skill isn't installed. `whop` is the entry point: it maps a goal ("sell a subscription", "pay my sellers") to skills and works even when the user never says "Whop".
 
 ## Source of truth
 
@@ -68,8 +69,7 @@ name: whop-<name>            # must equal the folder name
 description: >-
   <What it does, in one or two sentences.>
   Use when: "<trigger phrase>", "<trigger phrase>", ...
-  Chain with: <skill> for <reason>.
-  NOT for: <case> (use <skill>), <case> (use <skill>).
+  NOT for: <case> (<skill>), <case> (<skill>).
 license: Apache-2.0
 metadata:
   author: whop
@@ -77,7 +77,7 @@ metadata:
 ---
 ```
 
-Only spec fields are allowed at the top level (`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`). The description is at most 1024 characters and must contain `Use when` and `NOT for`. Agents pick skills from the description alone, so put the words users actually type in the triggers.
+Only spec fields are allowed at the top level (`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`). The description is at most 1024 characters and must contain `Use when` and `NOT for`. Agents pick skills from the description alone, so put the words users actually type in the triggers. Keep it under about 750 characters: ten or so triggers users really type beat thirty that crowd out new ones, and the `whop` router and each skill's body handle chaining.
 
 ### Body
 
@@ -86,13 +86,13 @@ Aim for under 300 lines; 500 is the hard limit. The test for what stays in `SKIL
 Sections, in this order:
 
 1. `# Title` and one sentence on what the skill does.
-2. `## Before you start` — what must be true first (client set up via `whop-api`, sandbox keys, which credential type).
+2. `## Before you start` — what must be true first. Step 1 inspects the project (installed SDK version, framework, sandbox or production). Then the docs to fetch, the client (via `whop-api`, with a fallback), sandbox keys and which credential type. The last step says sibling skills are optional.
 3. `## Rules` — the numbered gotchas that cause real bugs. These are the most valuable lines in the skill.
 4. `## Pick a path` — a decision table or tree from the user's goal to a workflow.
 5. One `##` section per workflow: numbered steps with a minimal, correct snippet.
 6. `## Verify` — how to prove it works in sandbox before going live.
 7. `## Errors` — symptom → cause → fix.
-8. `## References` — every file in `references/` with one line on when to read it.
+8. `## References` — every file in `references/` with one line on when to read it, ending with `references/skill-feedback.md`.
 
 ### Code
 
@@ -112,7 +112,11 @@ The list lives in `hooks/patterns.json` as each entry's `literal`. The same entr
 
 ### Self-contained
 
-Each skill installs on its own (`npx skills add <repo> --skill whop-checkout`). No `../` paths. Every file in `references/` is linked from that skill's `SKILL.md`. If two skills need the same fact, each states it; small duplication beats a broken link.
+Each skill installs on its own (`npx skills add <repo> --skill whop-checkout`). No `../` paths. Every file in `references/` is linked from that skill's `SKILL.md`. If two skills need the same fact, each states it; small duplication beats a broken link. Naming another skill is fine, but never depend on it: say what to do when it isn't installed (a docs page, or the snippet itself).
+
+### Skill feedback
+
+Every skill has `references/skill-feedback.md`: when the user says the skill was wrong or outdated, the agent drafts a GitHub issue on `whopio/skills` with private data removed, shows it, and posts only after the user approves the exact text. The copies are generated from `scripts/skill-feedback.template.md`; edit the template and run `scripts/build-skill-feedback.py` (`validate.py` fails when they drift). People filing by hand use `.github/ISSUE_TEMPLATE/skill-feedback.md`.
 
 ## Commands, agents and hooks
 

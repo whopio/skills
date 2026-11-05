@@ -40,6 +40,7 @@ test("current SDK at the checked version: packages and MCP notes, no warnings", 
   assert.match(context, /@whop\/sdk 2\.7\.0/);
   assert.match(context, /connection_status/);
   assert.match(context, /production/);
+  assert.match(context, /load the matching `whop-\*` skill \(or the `whop` skill to pick one\)/);
   assert.doesNotMatch(context, /type-checked against/);
 });
 
