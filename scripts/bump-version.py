@@ -15,6 +15,7 @@ JSON_FILES = [
     ".cursor-plugin/plugin.json",
     ".grok-plugin/plugin.json",
     ".kimi-plugin/plugin.json",
+    ".antigravity-plugin/plugin.json",
     "gemini-extension.json",
 ]
 # Where each host reads the whop MCP server, and the X-Whop-Plugin suffix that
@@ -24,6 +25,7 @@ MCP_FILES = {
     "mcp.json": " (agent-plugins)",
     "gemini-extension.json": " (gemini)",
     ".kimi-plugin/plugin.json": " (kimi)",
+    "mcp_config.json": " (antigravity)",
 }
 
 

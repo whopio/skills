@@ -1,0 +1,30 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "whop-developer",
+  "displayName": "Whop Developer",
+  "version": "0.4.0",
+  "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with connected accounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server.",
+  "logo": "assets/icon.svg",
+  "suggestedPrompts": [
+    "Add a Whop checkout for a monthly subscription to this app",
+    "Verify Whop webhooks and grant access when a payment succeeds",
+    "Migrate this Stripe integration to Whop"
+  ],
+  "author": {
+    "name": "Whop",
+    "url": "https://whop.com"
+  },
+  "homepage": "https://docs.whop.com/developer/start",
+  "repository": "https://github.com/whopio/skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "whop",
+    "payments",
+    "checkout",
+    "webhooks",
+    "subscriptions",
+    "payouts",
+    "marketplace",
+    "connected-accounts"
+  ]
+}

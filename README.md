@@ -64,6 +64,23 @@ copilot plugin marketplace add whopio/skills
 copilot plugin install whop-developer@whop-skills
 ```
 
+**Codex**
+
+```bash
+codex plugin marketplace add whopio/skills
+codex plugin add whop-developer@whop-skills
+```
+
+Start a new Codex session after installing.
+
+**VS Code (GitHub Copilot)**: turn on the `chat.plugins.enabled` setting, run **Chat: Install Plugin from Source** from the Command Palette, and enter `https://github.com/whopio/skills`.
+
+**Antigravity**
+
+```bash
+agy plugin install https://github.com/whopio/skills
+```
+
 **Gemini CLI**
 
 ```bash
@@ -72,7 +89,7 @@ gemini extensions install https://github.com/whopio/skills
 
 **Kimi Code**: run `/plugins install https://github.com/whopio/skills`, then `/reload`. Sign in to the Whop MCP server with `/mcp-config login` when Kimi asks.
 
-**Cursor, Claude Code, Codex, and other plugin-aware tools** (skills plus the MCP server):
+**Cursor, and other plugin-aware tools** (skills plus the MCP server):
 
 ```bash
 npx plugins add whopio/skills
@@ -80,17 +97,18 @@ npx plugins add whopio/skills
 
 ### What each tool gets
 
-| Tool | Skills | MCP server | Commands | Subagents | Hooks | Manifest |
-|---|---|---|---|---|---|---|
-| Claude Code | ✓ | ✓ | ✓ | ✓ | ✓ | `.claude-plugin/plugin.json` |
-| Cursor | ✓ | ✓ | ✓ | ✓ | | `.cursor-plugin/plugin.json` |
-| Kimi Code | ✓ | ✓ | ✓ | ✓ | | `.kimi-plugin/plugin.json` |
-| Gemini CLI | ✓ | ✓ | ✓ | | | `gemini-extension.json` |
-| GitHub Copilot CLI and other [Agent Plugins](https://agent-plugins.org) hosts | ✓ | ✓ | | | | `plugin.json` + `mcp.json` |
-| Codex | ✓ | ✓ | | | | `.codex-plugin/plugin.json` |
-| Grok Build | ✓ | ✓ | | | | `.grok-plugin/plugin.json` |
+| Tool | Skills | MCP server | Commands | Subagents | Hooks | Rules | Manifest |
+|---|---|---|---|---|---|---|---|
+| Claude Code | ✓ | ✓ | ✓ | ✓ | ✓ | | `.claude-plugin/plugin.json` |
+| Cursor | ✓ | ✓ | ✓ | ✓ | | ✓ | `.cursor-plugin/plugin.json` |
+| Kimi Code | ✓ | ✓ | ✓ | ✓ | | | `.kimi-plugin/plugin.json` |
+| Gemini CLI | ✓ | ✓ | ✓ | | | | `gemini-extension.json` |
+| Antigravity | ✓ | ✓ | | | | ✓ | `.antigravity-plugin/plugin.json` + `mcp_config.json` |
+| Codex | ✓ | ✓ | | | | | `.codex-plugin/plugin.json`, listed in `.agents/plugins/marketplace.json` |
+| GitHub Copilot (CLI and VS Code) and other [Agent Plugins](https://agent-plugins.org) hosts | ✓ | ✓ | | | | | `plugin.json` + `mcp.json` |
+| Grok Build | ✓ | ✓ | | | | | `.grok-plugin/plugin.json` |
 
-Where a tool has no subagents, `/whop-developer:audit` follows the reviewer's checklist itself.
+Where a tool has no subagents, `/whop-developer:audit` follows the reviewer's checklist itself. Cursor and Antigravity don't run the plugin's hooks, so they get the same checks as a rule ([`rules/whop.mdc`](rules/whop.mdc), [`rules/whop.md`](rules/whop.md)) that the agent applies when it works on Whop code.
 
 **Skills only, into any agent** (OpenCode, Claude Code, Cursor, Codex, and [more](https://github.com/vercel-labs/skills)):
 
@@ -99,6 +117,25 @@ npx skills add whopio/skills
 ```
 
 Add `-a <agent>` to pick the agent, or `--skill whop-checkout` to install one skill.
+
+**Copy the skills by hand.** Each skill is a folder with a `SKILL.md`. Codex, Cursor, OpenCode and Gemini CLI all read `~/.agents/skills/`:
+
+```bash
+git clone --depth 1 https://github.com/whopio/skills.git /tmp/whop-skills
+mkdir -p ~/.agents/skills && cp -R /tmp/whop-skills/skills/* ~/.agents/skills/
+```
+
+Or copy them into the folder your agent reads:
+
+| Agent | All projects | One project | Docs |
+|---|---|---|---|
+| Claude Code | `~/.claude/skills/` | `.claude/skills/` | [Skills](https://code.claude.com/docs/en/skills) |
+| Codex | `~/.agents/skills/` | `.agents/skills/` | [Skills](https://developers.openai.com/codex/skills) |
+| Cursor | `~/.cursor/skills/` or `~/.agents/skills/` | `.cursor/skills/` or `.agents/skills/` | [Skills](https://cursor.com/docs/skills) |
+| OpenCode | `~/.config/opencode/skills/` or `~/.agents/skills/` | `.opencode/skills/` | [Skills](https://opencode.ai/docs/skills/) |
+| Gemini CLI | `~/.gemini/skills/` or `~/.agents/skills/` | `.gemini/skills/` | [Skills](https://geminicli.com/docs/cli/skills/) |
+
+A hand copy doesn't include the MCP server, commands, subagents or hooks; add the MCP server as below.
 
 ### Whop MCP server
 

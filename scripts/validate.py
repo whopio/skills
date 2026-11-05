@@ -43,6 +43,7 @@ MANIFESTS = [
     (".cursor-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
     (".grok-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
     (".kimi-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
+    (".antigravity-plugin/plugin.json", lambda d: d["version"], lambda d: d["name"]),
     ("gemini-extension.json", lambda d: d["version"], lambda d: d["name"]),
 ]
 
@@ -194,6 +195,7 @@ MCP_HOST_SUFFIX = {
     "mcp.json": " (agent-plugins)",  # Copilot CLI, VS Code and other Agent Plugins hosts
     "gemini-extension.json": " (gemini)",
     ".kimi-plugin/plugin.json": " (kimi)",
+    "mcp_config.json": " (antigravity)",
 }
 
 
@@ -258,6 +260,13 @@ def check_mcp_configs(version: str) -> None:
         if not isinstance(value, str) or not value.startswith("./") or not (ROOT / value).is_dir():
             error(ROOT / ".kimi-plugin/plugin.json", f"{key} must be a ./ path to an existing directory")
 
+    # Antigravity reads mcp_config.json at the plugin root (remote servers use serverUrl).
+    antigravity = (load_json(ROOT / "mcp_config.json") or {}).get("mcpServers", {})
+    if list(antigravity) != ["whop"]:
+        error(ROOT / "mcp_config.json", "must define exactly one MCP server named 'whop'")
+    else:
+        expect_server("mcp_config.json", antigravity["whop"], "serverUrl", {})
+
     root_manifest = load_json(ROOT / "plugin.json") or {}
     if root_manifest.get("$schema") != AGENT_PLUGINS_PLUGIN_SCHEMA:
         error(ROOT / "plugin.json", f"$schema must be {AGENT_PLUGINS_PLUGIN_SCHEMA}, matching mcp.json's version")
@@ -270,9 +279,19 @@ def check_mcp_configs(version: str) -> None:
     cursor = load_json(ROOT / ".cursor-plugin/plugin.json") or {}
     if cursor.get("mcpServers") != "./.mcp.json":
         error(ROOT / ".cursor-plugin/plugin.json", "mcpServers must be ./.mcp.json (Cursor's format; mcp.json is the Agent Plugins format)")
+    # Cursor would otherwise load every file in rules/, including Antigravity's whop.md.
+    if cursor.get("rules") != "./rules/whop.mdc":
+        error(ROOT / ".cursor-plugin/plugin.json", "rules must be ./rules/whop.mdc")
+
+    codex_marketplace = load_json(ROOT / ".agents/plugins/marketplace.json") or {}
+    entries = codex_marketplace.get("plugins", [])
+    if [e.get("name") for e in entries] != [PLUGIN_NAME] or entries[0].get("source") != {"source": "local", "path": "./"}:
+        error(ROOT / ".agents/plugins/marketplace.json", f"must list one plugin, {PLUGIN_NAME!r}, with source {{source: local, path: ./}}")
+    if codex_marketplace.get("name") != (load_json(ROOT / ".claude-plugin/marketplace.json") or {}).get("name"):
+        error(ROOT / ".agents/plugins/marketplace.json", "name must match .claude-plugin/marketplace.json, so install commands read the same")
 
     # Every host listing shows the same pitch (Gemini's manifest keeps its own shorter one).
-    for path in (".claude-plugin/plugin.json", ".codex-plugin/plugin.json", ".cursor-plugin/plugin.json", ".grok-plugin/plugin.json", ".kimi-plugin/plugin.json"):
+    for path in (".claude-plugin/plugin.json", ".codex-plugin/plugin.json", ".cursor-plugin/plugin.json", ".grok-plugin/plugin.json", ".kimi-plugin/plugin.json", ".antigravity-plugin/plugin.json"):
         data = load_json(ROOT / path) or {}
         if data.get("description") != root_manifest.get("description"):
             error(ROOT / path, "description must match plugin.json")
@@ -311,6 +330,15 @@ def check_skill_feedback() -> None:
     if result.returncode != 0:
         for line in result.stdout.strip().splitlines() or ["skill-feedback.md files are out of date"]:
             error(SKILLS_DIR, line)
+
+
+def check_rules() -> None:
+    import subprocess
+
+    result = subprocess.run([sys.executable, str(ROOT / "scripts" / "build-rules.py"), "--check"], capture_output=True, text=True)
+    if result.returncode != 0:
+        for line in result.stdout.strip().splitlines() or ["rules/ is out of date"]:
+            error(ROOT / "rules", line)
 
 
 def check_gemini_commands() -> None:
@@ -463,6 +491,7 @@ def main() -> int:
     check_plugin_extras(skill_names)
     check_gemini_commands()
     check_skill_feedback()
+    check_rules()
     check_mcp_tool_names()
     check_no_symlinks()
 

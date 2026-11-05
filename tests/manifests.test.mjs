@@ -38,6 +38,7 @@ export function validate(schema, value, root = schema, path = "$") {
     if (schema.maxLength !== undefined && value.length > schema.maxLength) errors.push(`${path} is too long`);
     if (schema.pattern && !new RegExp(schema.pattern, "u").test(value)) errors.push(`${path} doesn't match ${schema.pattern}`);
   }
+  if (Array.isArray(value) && schema.maxItems !== undefined && value.length > schema.maxItems) errors.push(`${path} has too many items`);
   if (Array.isArray(value) && schema.items) value.forEach((item, i) => errors.push(...validate(schema.items, item, root, `${path}[${i}]`)));
   if (isObject) {
     for (const key of schema.required ?? []) if (!(key in value)) errors.push(`${path}.${key} is required`);
@@ -47,6 +48,9 @@ export function validate(schema, value, root = schema, path = "$") {
       else if (schema.additionalProperties === false) errors.push(`${path}.${key} is not allowed`);
       else if (typeof schema.additionalProperties === "object") errors.push(...validate(schema.additionalProperties, child, root, `${path}.${key}`));
     }
+  }
+  if (schema.anyOf && !schema.anyOf.some((option) => validate(option, value, root, path).length === 0)) {
+    errors.push(`${path} must match at least one variant`);
   }
   if (schema.oneOf) {
     const matches = schema.oneOf.filter((option) => validate(option, value, root, path).length === 0).length;
@@ -75,11 +79,30 @@ test("the validator rejects what the spec rejects", async () => {
   assert.notDeepEqual(validate(plugin, { ...readJson("plugin.json"), name: "Whop--Dev" }), []);
 });
 
+// Antigravity publishes its manifest schema; set ANTIGRAVITY_SCHEMA_FILE to run offline.
+async function loadAntigravitySchema() {
+  if (process.env.ANTIGRAVITY_SCHEMA_FILE) return JSON.parse(readFileSync(process.env.ANTIGRAVITY_SCHEMA_FILE, "utf8"));
+  const res = await fetch("https://antigravity.google/schemas/v1/plugin.json");
+  assert.equal(res.status, 200, "fetching the Antigravity plugin schema");
+  return res.json();
+}
+
+test(".antigravity-plugin/plugin.json satisfies Antigravity's plugin schema", async () => {
+  const schema = await loadAntigravitySchema();
+  const manifest = readJson(".antigravity-plugin/plugin.json");
+  assert.deepEqual(validate(schema, manifest), []);
+  // The checks that matter for this manifest actually run.
+  assert.notDeepEqual(validate(schema, { ...manifest, category: "payments" }), []);
+  assert.notDeepEqual(validate(schema, { ...manifest, logo: "https://whop.com/icon.svg" }), []);
+  assert.notDeepEqual(validate(schema, { ...manifest, suggestedPrompts: ["a", "b", "c", "d"] }), []);
+});
+
 test("every host's MCP entry points at the same server", () => {
   const url = readJson(".mcp.json").mcpServers.whop.url;
   assert.equal(readJson("mcp.json").mcpServers.whop.url, url);
   assert.equal(readJson("gemini-extension.json").mcpServers.whop.httpUrl, url);
   assert.equal(readJson(".kimi-plugin/plugin.json").mcpServers.whop.url, url);
+  assert.equal(readJson("mcp_config.json").mcpServers.whop.serverUrl, url);
   assert.equal(readJson(".cursor-plugin/plugin.json").mcpServers, "./.mcp.json");
   assert.equal(readJson(".codex-plugin/plugin.json").mcpServers, "./.mcp.json");
 });

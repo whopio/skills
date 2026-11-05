@@ -129,6 +129,7 @@ The plugin ships more than skills. They are Claude Code features, so they never 
 | `hooks/claude-hooks.json` | `SessionStart`, `PostToolUse` and `PreToolUse` hooks (the last makes Claude Code ask the user before any Whop MCP call with `mcp_confirmation_token`, because evals showed models treat the original request as approval), declared in `.claude-plugin/plugin.json`. Not named `hooks/hooks.json`, because Cursor auto-loads that path and uses a different hook format | Claude Code |
 | `hooks/*.mjs` | Hook scripts: Node built-ins only, read local files only, exit 0 on any error, print nothing when there is nothing to say | |
 | `skills/<name>/scripts/` | Scripts that belong to one skill (`whop-webhooks/scripts/send-test-event.mjs`). Mention each from its `SKILL.md` | Every agent |
+| `rules/whop.mdc`, `rules/whop.md` | The hooks' checks as a rule, for hosts without hooks. Both are generated from `scripts/rules.template.md` by `scripts/build-rules.py` (`validate.py` fails when they drift). Cursor reads only the `.mdc` (named in `.cursor-plugin/plugin.json`, which stops it scanning the folder); Antigravity reads `rules/*.md`. Both load the rule when the agent judges the description relevant, not on every message | Cursor, Antigravity |
 
 Rules:
 
@@ -149,13 +150,14 @@ Rules:
 | `.cursor-plugin/plugin.json` → `.mcp.json` | Cursor Marketplace. `mcpServers` points at `.mcp.json` explicitly: Cursor's format is Claude's (`"type": "http"`), and Whop's own Cursor plugin ships the same shape |
 | `.grok-plugin/plugin.json` + `.mcp.json` | Grok Build |
 | `.kimi-plugin/plugin.json` | Kimi Code. MCP is declared inline, because Kimi doesn't resolve file references. Kimi loads `skills/`, `commands/*.md` and `subagents/*.md` (it accepts Claude-style agent files and uses the same tool names) |
+| `.antigravity-plugin/plugin.json` + `mcp_config.json` | Antigravity (takes precedence over the root `plugin.json`). Remote MCP uses `serverUrl`. Antigravity also loads `skills/` and `rules/*.md`; it would load an `agents/` folder or a root `hooks.json`, which is why subagents live in `subagents/` and Claude hooks in `hooks/`. `tests/manifests.test.mjs` checks the manifest against Antigravity's published schema; also run `agy plugin validate --strict .` when the CLI is available |
+| `.agents/plugins/marketplace.json` | Codex marketplace (`codex plugin marketplace add whopio/skills`). One entry, `whop-developer`, with a local `./` source; its `name` matches the Claude marketplace so both install as `whop-developer@whop-skills` |
 | `gemini-extension.json` | Gemini CLI (MCP inline, as `httpUrl`). Gemini reads commands only as TOML, so `commands/whop-developer/*.toml` is generated from `commands/*.md` by `scripts/build-gemini-commands.py`; `validate.py` fails when they drift. Gemini has no access to our subagents (they're Claude-format, outside the `agents/` folder Gemini scans), so `/whop-developer:audit` falls back to following `subagents/whop-integration-reviewer.md` |
 
-Every host's MCP entry points at the same server: the official Whop MCP server, `https://mcp.whop.com/claude/mcp` (the route without money-out tools, until the hosted server offers a non-admin default on `/mcp`). Each sends `X-Whop-Plugin: skills/<version>` plus a host suffix, so Whop can tell where connections come from: none for `.mcp.json` (Claude Code, Cursor, Grok, older Codex), ` (agent-plugins)` for `mcp.json`, ` (gemini)`, and ` (kimi)`. `scripts/bump-version.py` and `validate.py` share that table.
+Every host's MCP entry points at the same server: the official Whop MCP server, `https://mcp.whop.com/claude/mcp` (the route without money-out tools, until the hosted server offers a non-admin default on `/mcp`). Each sends `X-Whop-Plugin: skills/<version>` plus a host suffix, so Whop can tell where connections come from: none for `.mcp.json` (Claude Code, Cursor, Grok, older Codex), ` (agent-plugins)` for `mcp.json`, ` (gemini)`, ` (kimi)`, and ` (antigravity)` for `mcp_config.json`. `scripts/bump-version.py` and `validate.py` share that table.
 
 **Hosts we don't ship to yet**, and why:
 
-- Antigravity: our subagents now sit outside the `agents/` folder it auto-loads, so the blocker is gone, but it still needs a `.antigravity-plugin/plugin.json`, a root `mcp_config.json` (`serverUrl`) and a run of `agy plugin validate --strict`.
 - OpenCode plugins are JavaScript modules rather than manifests. Skills already install with `npx skills add -a opencode`, and the MCP setup is in the README.
 
 Before adding a host, read its loader or its docs for manifest precedence. Several hosts read the root `plugin.json` before their own folder.

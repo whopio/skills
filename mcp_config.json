@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "whop": {
+      "serverUrl": "https://mcp.whop.com/claude/mcp",
+      "headers": {
+        "X-Whop-Plugin": "skills/0.4.0 (antigravity)"
+      }
+    }
+  }
+}
