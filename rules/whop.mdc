@@ -1,5 +1,5 @@
 ---
-description: "Building on Whop: @whop/sdk, Whop checkout and payments, webhooks, memberships and access checks, payouts, connected accounts, Whop apps and chat"
+description: "Building on Whop: @whop/sdk, Whop checkout and payments, webhooks, memberships and access checks, payouts, subaccounts (connected accounts), Whop apps and chat"
 alwaysApply: false
 ---
 
