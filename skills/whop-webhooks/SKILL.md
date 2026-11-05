@@ -12,7 +12,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.4.0"
+  version: "0.5.0"
 ---
 
 # Whop Webhooks

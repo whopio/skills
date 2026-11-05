@@ -17,6 +17,6 @@ Load the matching `whop-*` skill before writing Whop code (or the `whop` skill t
 - **Check access on the server** with `users.checkAccess` and return `403` when `has_access` is `false`.
 - **Send an `Idempotency-Key`** (`{ idempotencyKey }` as the SDK's second argument) on calls that move money.
 - **Use current names:** `variants` (not plans), `billing_type` (not `plan_type`), `accounts` and `account_id` (not companies or `company_id`), `payouts` (not withdrawals), `deposits` (not top-ups), `checkoutConfigurations` (not checkout sessions), `@whop/elements-react` (not `@whop/checkout`), and `@whop/sdk` (not `@whop/api`).
-- **The Whop MCP server is the live production account.** Use it to look up IDs and read the docs, not to test code. When a tool returns a prepared preview, show it to the user and run it only after they approve.
+- **The Whop MCP server is the live production account.** Use it to look up IDs and read the docs, not to test code. Its tools run on the first call, so before one that changes data, say what will happen and get the user's yes.
 - **Don't loop.** If the same call fails twice, stop retrying it: read the whole error (status, body, request ID), check the docs page and the installed SDK types, then change the request or the approach.
 - **Finish with a report:** what changed, which environment it targets (sandbox or production; if undecided, say so and recommend sandbox first), which checks you ran, and what is still unverified.

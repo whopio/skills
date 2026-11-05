@@ -19,6 +19,7 @@ whop-platforms    marketplaces: subaccounts, onboarding, collecting for subaccou
 whop-apps         apps that run inside Whop: CLI, app views, user auth, permissions, installs, scheduled runs, notifications, OAuth, uploads
 whop-communities  chat and community: Chat and DMs elements, chat auth and user sync, channels, support chats, forums, courses
 whop-migrate      move to Whop from Stripe and others, or from older Whop API names
+whop-operate      run the live store through the MCP server: products, refunds, ads, websites, formation
 ```
 
 Every other skill assumes `whop-api`'s setup. A skill that needs an API client says "set up the client with `whop-api`", followed by a one-line fallback for when that skill isn't installed. `whop` is the entry point: it maps a goal ("sell a subscription", "pay my sellers") to skills and works even when the user never says "Whop".
@@ -38,7 +39,7 @@ The plugin ships the Whop MCP server, and skills tell the agent when to use it. 
 
 - **MCP is for the agent's own work**: looking up IDs, checking live state, debugging production, and one-off changes the user asks for. It acts on the signed-in user's live account and can't reach sandbox.
 - **The SDK is for the app's code**, tested in sandbox with an API key.
-- **Consequential tools prepare first.** A skill that names one says the user must approve the preview.
+- **Tools run on the first call.** A skill that names one that moves money, changes credentials or deletes data says the user must approve before the call.
 - **`/claude/mcp` has no money-out writes** (payouts, transfers, deposits, cards, swaps). Skills never suggest a workaround.
 
 `skills/whop-api/references/mcp.md` is the full contract: connecting, `intent`/`intent_id`, prepare-and-confirm, idempotency and error codes. Every other skill has a short `## With the Whop MCP server` section that links to it by skill name.
@@ -126,7 +127,7 @@ The plugin ships more than skills. They are Claude Code features, so they never 
 |---|---|---|
 | `commands/*.md` | `/whop-developer:<file name>` slash commands (`connect`, `setup`, `test-webhook`, `audit`). Frontmatter: `description`, optional `argument-hint`; no `name`. After editing one, run `scripts/build-gemini-commands.py` to regenerate `commands/whop-developer/*.toml` | Claude Code, Cursor, Kimi Code; Gemini CLI through the generated TOML |
 | `subagents/*.md` | Subagents (`whop-integration-reviewer`, `whop-migrator`), listed file by file in `agents` in the Claude and Cursor manifests (Claude Code takes `.md` paths, not a folder) and by folder in the Kimi manifest. `name` equals the file name; `skills` preloads skills from this repo; `tools` uses Claude Code tool names, which Kimi shares. Not `agents/`: Gemini CLI and Antigravity always load that folder and print errors for Claude-format agents | Claude Code, Cursor, Kimi Code |
-| `hooks/claude-hooks.json` | `SessionStart`, `PostToolUse` and `PreToolUse` hooks (the last makes Claude Code ask the user before any Whop MCP call with `mcp_confirmation_token`, because evals showed models treat the original request as approval), declared in `.claude-plugin/plugin.json`. Not named `hooks/hooks.json`, because Cursor auto-loads that path and uses a different hook format | Claude Code |
+| `hooks/claude-hooks.json` | `SessionStart`, `PostToolUse` and `PreToolUse` hooks (the last makes Claude Code ask the user before any Whop MCP tool flagged `confirm` in `scripts/mcp-tools.json`, because evals showed models treat the original request as approval), declared in `.claude-plugin/plugin.json`. Not named `hooks/hooks.json`, because Cursor auto-loads that path and uses a different hook format | Claude Code |
 | `hooks/*.mjs` | Hook scripts: Node built-ins only, read local files only, exit 0 on any error, print nothing when there is nothing to say | |
 | `skills/<name>/scripts/` | Scripts that belong to one skill (`whop-webhooks/scripts/send-test-event.mjs`). Mention each from its `SKILL.md` | Every agent |
 | `rules/whop.mdc`, `rules/whop.md` | The hooks' checks as a rule, for hosts without hooks. Both are generated from `scripts/rules.template.md` by `scripts/build-rules.py` (`validate.py` fails when they drift). Cursor reads only the `.mdc` (named in `.cursor-plugin/plugin.json`, which stops it scanning the folder); Antigravity reads `rules/*.md`. Both load the rule when the agent judges the description relevant, not on every message | Cursor, Antigravity |
@@ -185,9 +186,11 @@ claude plugin eval . --case 'whop-webhooks-*' --allow-tools Write Edit
 
 Run the affected cases after any change to a `SKILL.md`, and compare scores before and after when rewording a description. When a bug is found by hand, add a case for it.
 
+The Evals workflow (`.github/workflows/evals.yml`) runs every case nightly on `main`, on demand, and on a pull request labelled `run-evals`, and writes the scores to the job summary. It needs the `ANTHROPIC_API_KEY` repository secret and skips without it.
+
 Eval notes:
 
-- **MCP cases use mocks, never the live server.** `evals/mocks/whop/<tool>.md` holds the canned result for each mocked tool. `evals/mocks/whop/_tools.json` holds their real definitions (schemas, descriptions, the two-step notice), generated by `scripts/sync-mcp-tools.py`, so the model sees the server's actual contract. A tool with no mock isn't available in a run. Add a mock (and re-run the sync script) when a case needs another tool. Grade what reached the server with `target: mock_calls`, which also lists calls a hook denied; match `"verdict":"ok"` to count only the ones that ran.
+- **MCP cases use mocks, never the live server.** `evals/mocks/whop/<tool>.md` holds the canned result for each mocked tool. `evals/mocks/whop/_tools.json` holds their real definitions (schemas, descriptions, annotations), generated by `scripts/sync-mcp-tools.py`, so the model sees the server's actual contract. A tool with no mock isn't available in a run. Add a mock (and re-run the sync script) when a case needs another tool. Grade what reached the server with `target: mock_calls`, which also lists calls a hook denied; match `"verdict":"ok"` to count only the ones that ran.
 - **Grant file tools** with `--allow-tools Write Edit` for cases that write files. Otherwise the file graders can't pass.
 - **Test triggering, not only answers.** Most prompts name Whop. The `whop-router-*` cases don't: `whop-router-unnamed-paywall` runs in a project that already has `@whop/sdk` and asks for a paywall without saying "Whop", and `whop-router-stripe-project-quiet` asks the same in a Stripe project and fails if any `whop*` skill loads (`tool_used` with `max: 0` and `arm: both`). Run both whenever a description or the session-start hook changes.
 - **Fixture projects come from a `case.yaml` `scaffold_script`**, which writes files into the empty workspace. It runs only with `--scaffold`; without it those cases score 0 because the files are missing.

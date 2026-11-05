@@ -1,5 +1,5 @@
 {
-  "description": "Whop developer checks: flag stale Whop API names and leaked secrets in edited files, describe a Whop project's packages at session start, and ask the user before any prepared Whop MCP operation executes.",
+  "description": "Whop developer checks: flag stale Whop API names and leaked secrets in edited files, describe a Whop project's packages at session start, and ask the user before a Whop MCP tool that moves money, changes credentials or deletes data runs.",
   "hooks": {
     "SessionStart": [
       {

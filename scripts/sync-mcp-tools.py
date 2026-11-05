@@ -19,8 +19,8 @@ with the same tools leaves the repo untouched.
 
 With generated/manifest.json present it also rewrites every evals/**/mocks/whop/_tools.json:
 the tools/list entries (schemas and descriptions) for every mocked tool, built
-the way packages/server/src/runtime/server.ts builds them on the hosted server
-(prepare-and-confirm enforced), so eval runs see the real tool contract.
+the way packages/server/src/runtime/server.ts builds them on the hosted server, so
+eval runs see the real tool contract.
 """
 
 import argparse
@@ -72,50 +72,35 @@ def builtin_tools(repo: Path) -> dict[str, str]:
 
 
 UUID_PATTERN = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
-TWO_STEP = (
-    "Two-step tool. Without mcp_confirmation_token, calling it is a SAFE PREVIEW: nothing executes, no money moves, "
-    "no data changes \u2014 it returns exactly what would happen plus a confirmation token. Show that preview to the user. "
-    "Executing is the user's decision, not yours: call again with the token once they approve, in the moment or through "
-    "standing permission they have given you."
-)
 
 
 def tool_definition(op: dict) -> dict:
-    """Mirror toolInputSchema + withIntentContext + toolDescription (enforced confirmation)."""
+    """Mirror toolInputSchema + withIntentContext + toolDescription in runtime/server.ts."""
     safety = op["safety"]
     schema = json.loads(json.dumps(op["inputSchema"]))
     properties = schema.setdefault("properties", {})
-    confirmed = safety["confirmationRequired"]
-    upstream_replay = op["surface"] == "native" and op["method"] == "post"
-    if confirmed:
-        properties["mcp_confirmation_token"] = {
+    if safety["confirmationRequired"] or safety["idempotency"] != "none":
+        properties["idempotency_key"] = {
             "type": "string",
-            "description": "Leave unset on the first call to prepare this operation and receive a confirmation token. Pass the token back, after the user approves, to execute.",
-        }
-    if confirmed or safety["idempotency"] != "none":
-        if upstream_replay:
-            text = (
-                "Caller-chosen stable retry key. Required when executing with a confirmation token; reuse the same key when retrying. The native API replays completed requests and rejects requests still in flight."
-                if confirmed
-                else "Caller-chosen stable retry key. Reuse the same key when retrying after a timeout or error. The native API replays completed requests and rejects requests still in flight."
-            )
-        else:
-            text = (
-                "Caller-chosen stable key for local replay and conflict detection. Required when executing with a confirmation token; reuse the same key when retrying. If the outcome is reported as unknown, verify the effect instead of executing again."
-                if confirmed
+            "description": (
+                "Caller-chosen stable retry key. Reuse the same key when retrying after a timeout or error. The native API replays completed requests and rejects requests still in flight."
+                if op["surface"] == "native" and op["method"] == "post"
                 else "Caller-chosen stable key forwarded to the API. Reuse the same key when retrying, but verify the operation outcome after an ambiguous error."
-            )
-        properties["idempotency_key"] = {"type": "string", "description": text}
+            ),
+        }
     properties["intent"] = {"type": "string", "minLength": 1, "pattern": "\\S", "description": "The original user request that led to this tool call. Copy it verbatim when available."}
     properties["intent_id"] = {
         "type": "string", "format": "uuid", "minLength": 36, "maxLength": 36, "pattern": UUID_PATTERN,
         "description": "A UUID for the user turn that caused this call. Generate it once per user message and reuse it for every tool call made to fulfill that message. Never derive it from the intent text.",
     }
     schema["required"] = list(dict.fromkeys([*schema.get("required", []), "intent", "intent_id"]))
-    description = op.get("description") or op.get("summary") or ""
-    if confirmed:
-        description = f"{description}\n\n{TWO_STEP}" if description else TWO_STEP
-    return {"name": op["toolName"], "description": description, "inputSchema": schema, "annotations": {**op["annotations"], "title": op.get("summary")}}
+    annotations = {key: op["annotations"].get(key) for key in ("readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint")}
+    return {
+        "name": op["toolName"],
+        "description": op.get("description") or op.get("summary") or "",
+        "inputSchema": schema,
+        "annotations": {**annotations, "title": op.get("summary")},
+    }
 
 
 CONNECTION_STATUS = {
@@ -268,7 +253,7 @@ def main() -> int:
         OUTPUT.write_text(
             json.dumps(
                 {
-                    "$comment": "Generated by scripts/sync-mcp-tools.py. Tool -> safety flags (read_only, mutating, destructive; financial, credential; confirm = prepare-and-confirm).",
+                    "$comment": "Generated by scripts/sync-mcp-tools.py. Tool -> safety flags (read_only, mutating, destructive; financial, credential; confirm = the server flags it as needing the user's approval; hooks/confirm-whop-execution.mjs asks before it runs).",
                     "source": source,
                     "surface": "claude_directory (https://mcp.whop.com/claude/mcp)",
                     "apiVersion": api_version,

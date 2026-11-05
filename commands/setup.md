@@ -49,7 +49,7 @@ Use the env file the project actually has. It should print a `biz_` ID. On `401`
 
 ## 6. The Whop MCP server (optional)
 
-If the `whop` MCP tools are connected, call `connection_status` and tell the user which Whop user and account that connection uses. Explain that the MCP server works on their **live production** account, separately from the sandbox key you just set up. During setup, use it only for reads. Creating products, webhooks or payments through it creates real production objects, so do that only when the user asks, and only after they approve the prepared preview.
+If the `whop` MCP tools are connected, call `connection_status` and tell the user which Whop user and account that connection uses. Explain that the MCP server works on their **live production** account, separately from the sandbox key you just set up. During setup, use it only for reads. Creating products, webhooks or payments through it creates real production objects, so do that only when the user asks, and only after they say yes to what you will create.
 
 ## 7. Wrap up
 

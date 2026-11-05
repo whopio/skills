@@ -11,11 +11,11 @@ description: >-
   skill". NOT for: a task one skill clearly covers (load it directly:
   whop-checkout, whop-webhooks, whop-billing...), a project on another
   processor with no plan to move (whop-migrate only when moving), running a
-  live Whop store by hand (use the whop CLI).
+  live Whop store by hand (whop-operate).
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.4.0"
+  version: "0.5.0"
 ---
 
 # Whop
@@ -57,6 +57,7 @@ The installed SDK is the source of truth for names on that version: `node_module
 | Build an app that runs inside Whop: views, user tokens, permissions, OAuth | `whop-apps` | `developer/apps/overview` |
 | Chat, DMs, support chats, forums, courses in your own product | `whop-communities` | `developer/guides/chat/quickstart` |
 | Move from Stripe or another processor, or upgrade old Whop code | `whop-migrate` | `developer/api/migrate-from-previous-versions` |
+| Run the live store itself, not code: refund a customer, check revenue, launch a product, ads, websites | `whop-operate` | `developer/ai/connect` |
 
 Each docs page is at `https://docs.whop.com/<path>.md`. Load the skill for the user's first step, and load the next one when the work reaches it.
 
@@ -78,7 +79,7 @@ Fetch the guide and follow it: ads and conversion tracking (`developer/ads/overv
 
 ## With the Whop MCP server
 
-If the `whop` MCP tools are connected, use them to look things up for the code you write (`accounts_list`, `products_list`, `variants_list`, `webhooks_list`) and to search the docs (`docs_search`, then `docs_query`). They act on the signed-in user's live production account and can't reach sandbox, so test code with sandbox API keys, not MCP. Tools that change data return a preview first; run them only after the user approves that preview.
+If the `whop` MCP tools are connected, use them to look things up for the code you write (`accounts_list`, `products_list`, `variants_list`, `webhooks_list`) and to search the docs (`docs_search`, then `docs_query`). They act on the signed-in user's live production account and can't reach sandbox, so test code with sandbox API keys, not MCP. Tools that change data run on the first call, so say what will happen and get the user's yes before calling one.
 
 ## Finish
 

@@ -42,4 +42,4 @@ The script exits non-zero on the first three when they fail. For a failure, name
 
 ## 5. Then test with real Whop deliveries
 
-Local signing proves the code. Before going live, also run it against Whop: expose the server with a tunnel, create a **sandbox** webhook pointing at it, and send a test event (`webhooks.test` in the SDK, or the dashboard). Then make a sandbox purchase, as in the skill's Verify section. The Whop MCP server's `webhooks_test` tool only reaches **production** webhooks: use it only on a webhook the user names, and only after they approve the prepared call.
+Local signing proves the code. Before going live, also run it against Whop: expose the server with a tunnel, create a **sandbox** webhook pointing at it, and send a test event (`webhooks.test` in the SDK, or the dashboard). Then make a sandbox purchase, as in the skill's Verify section. The Whop MCP server's `webhooks_test` tool only reaches **production** webhooks: use it only on a webhook the user names, and only after they say yes to sending it.

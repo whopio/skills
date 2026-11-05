@@ -17,6 +17,7 @@ Each skill follows the [Agent Skills specification](https://agentskills.io/speci
 | [`whop-platforms`](skills/whop-platforms) | Run a marketplace with subaccounts, onboarding and verification |
 | [`whop-apps`](skills/whop-apps) | Build apps that run inside Whop: app views, user auth, permissions, OAuth |
 | [`whop-communities`](skills/whop-communities) | Embed chat and DMs, sync users, and work with channels, forums and courses |
+| [`whop-operate`](skills/whop-operate) | Run your live store from the agent: products, checkout links, refunds, memberships, ads, websites and stats |
 | [`whop-migrate`](skills/whop-migrate) | Move to Whop from Stripe and others, or from older Whop API names |
 
 You don't call skills by name. Describe what you want ("add a Whop webhook that fulfills the order when a payment succeeds") and the agent loads the matching skill. Each skill works when installed alone; it falls back to the Whop docs where it would hand off to a skill you don't have.
@@ -41,10 +42,10 @@ The plugin adds these on top of the skills.
 
 Claude Code also runs three hooks:
 
-- **Before a prepared Whop operation executes** (a Whop MCP call carrying `mcp_confirmation_token`: a refund, a cancellation, a deletion, a new webhook), it makes Claude Code ask you, even if you always allow the Whop tools. The model can't treat your original request as the approval. Previews and reads aren't affected.
+- **Before a Whop MCP tool that moves money, changes credentials or deletes data runs** (a refund, a cancellation, a deletion, a new webhook secret), it makes Claude Code ask you, even if you always allow the Whop tools. The server runs every tool on the first call, so this is where you approve. The model can't treat your original request as the approval. Reads and ordinary writes aren't affected. The list of tools comes from `scripts/mcp-tools.json`.
 
 - **After every file edit**, it checks the lines just written for names the current API replaced (`plans.create`, `new Whop(`, `company_id`, `membership.went_valid`...) and for unsafe code: a Whop key under `NEXT_PUBLIC_` or in a `"use client"` file, a hard-coded `ws_` secret, a parsed webhook body. It tells the agent the fix and the skill to load. Each finding is reported once per session.
-- **At session start**, in a project that already uses Whop, it tells the agent which Whop packages are installed, flags deprecated ones, and explains that the MCP server works on the live account and confirms consequential actions in two steps. Other projects get nothing.
+- **At session start**, in a project that already uses Whop, it tells the agent which Whop packages are installed, flags deprecated ones, and explains that the MCP server works on the live account and runs every tool on the first call. Other projects get nothing.
 
 All three need Node 18+ and do nothing if it's missing. They read local files only and never send data anywhere. The webhook test script ships inside the `whop-webhooks` skill, so agents that install only the skills get it too.
 
@@ -157,7 +158,7 @@ The first call opens a browser window to sign in to Whop. See the [MCP guide](ht
 
 ## Operating a Whop business instead?
 
-These skills are for writing code against Whop. To run a live store from your agent (refund a customer, launch a product, check revenue), use [`whopio/plugins`](https://github.com/whopio/plugins) or the `whop` CLI.
+The `whop-operate` skill in this plugin runs a live store from your agent (refund a customer, launch a product, check revenue) through the same Whop MCP sign-in. The older [`whopio/plugins`](https://github.com/whopio/plugins) plugin and the `whop` CLI still work too.
 
 ## Contributing
 

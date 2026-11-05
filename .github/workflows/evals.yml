@@ -1,0 +1,89 @@
+name: Evals
+
+# Runs every eval case with and without the plugin and writes the pass rates to
+# the job summary. Nightly on main, by hand, and on a pull request labelled
+# `run-evals`. Needs the ANTHROPIC_API_KEY repository secret; without it the
+# job says so and skips instead of failing.
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+    inputs:
+      case:
+        description: Case name glob (default every case)
+        required: false
+        default: "*"
+      runs:
+        description: Runs per case
+        required: false
+        default: "3"
+  pull_request:
+    types: [labeled, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evals:
+    name: Plugin evals
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-evals')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      CASE: ${{ inputs.case || '*' }}
+      RUNS: ${{ inputs.runs || '3' }}
+    steps:
+      - name: Check for the API key
+        id: key
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "ANTHROPIC_API_KEY isn't set, so evals were skipped." >> "$GITHUB_STEP_SUMMARY"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.key.outputs.present == 'true'
+
+      - uses: actions/setup-node@v7
+        if: steps.key.outputs.present == 'true'
+        with:
+          node-version: 22
+
+      - name: Install Claude Code
+        if: steps.key.outputs.present == 'true'
+        run: npm install -g @anthropic-ai/claude-code@2.1.316
+
+      - name: Run evals
+        if: steps.key.outputs.present == 'true'
+        run: |
+          claude plugin eval . --case "$CASE" --runs "$RUNS" --scaffold --trust-plugin \
+            --allow-tools Write Edit --concurrency 4 --max-cost-usd 40 \
+            --json "$RUNNER_TEMP/evals.json" | tee "$RUNNER_TEMP/evals.txt"
+
+      - name: Summarize
+        if: always() && steps.key.outputs.present == 'true'
+        run: |
+          {
+            echo '## Eval results'
+            echo
+            echo '```'
+            tail -n 80 "$RUNNER_TEMP/evals.txt" 2>/dev/null || echo "No report was written."
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v6
+        if: always() && steps.key.outputs.present == 'true'
+        with:
+          name: evals
+          path: |
+            ${{ runner.temp }}/evals.json
+            ${{ runner.temp }}/evals.txt
+          if-no-files-found: ignore
