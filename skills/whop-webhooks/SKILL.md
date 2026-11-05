@@ -22,7 +22,7 @@ Whop sends a signed `POST` to your server when something happens: a payment succ
 ## Before you start
 
 1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
-2. Fetch `https://docs.whop.com/developer/guides/webhooks.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+2. Fetch `https://docs.whop.com/developer/guides/webhooks.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
 3. Confirm the environment. Sandbox (`https://sandbox-api.whop.com/api/v1`, dashboard at `sandbox.whop.com`) and production have separate webhooks and secrets.
 4. Confirm the server framework before writing a handler. Framework handlers are in [references/frameworks.md](references/frameworks.md).
 5. Creating a webhook through the API needs an API key and a client. Set that up with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
@@ -134,7 +134,11 @@ The `Set` stands in for durable storage. In production, record `event.id` in you
 4. Make a real sandbox purchase with a test card (see `whop-checkout`) and confirm the handler ran once.
 5. Inspect deliveries (kept 30 days) in the dashboard or with `GET /api/v1/webhooks/{id}/deliveries`.
 
+When you're done, tell the user what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first), which of these checks you ran, and what is still unverified.
+
 ## Errors
+
+If the same call fails twice, stop retrying it. Read the whole error (status, body and request ID), check the docs page and the installed SDK types, then change the request or the approach.
 
 | Symptom | Cause | Fix |
 |---|---|---|

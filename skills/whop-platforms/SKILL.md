@@ -23,7 +23,7 @@ A platform is a Whop account with connected accounts under it: one per seller, c
 ## Before you start
 
 1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
-2. Fetch `https://docs.whop.com/developer/platforms/enroll-subaccounts.md`, `https://docs.whop.com/developer/platforms/collect-payments-for-subaccounts.md`, `https://docs.whop.com/developer/verification/overview.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+2. Fetch `https://docs.whop.com/developer/platforms/enroll-subaccounts.md`, `https://docs.whop.com/developer/platforms/collect-payments-for-subaccounts.md` and `https://docs.whop.com/developer/verification/overview.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
 3. Set up the client with `whop-api`, using the **platform's Account API key**. That key decides which platform owns every connected account you create. It is a secret: keep it on your server. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
 4. Build against sandbox first (`https://sandbox-api.whop.com/api/v1`).
 5. Decide where onboarding happens: a Whop-hosted page (account link), your own page (Verifications element), or fully through the API.
@@ -193,7 +193,11 @@ The `whop` MCP tools act on the signed-in user's **live** account and can't reac
 2. Open the onboarding link, finish it, and confirm `verifications.list({ account_id })` shows the status you expect and `identity_profile.updated` reached your webhook (created with `child_resource_events: true`).
 3. Buy through the checkout with a sandbox test card and check the platform's balance received the fee and the seller's the rest (`financialActivity.list`, see `whop-payouts`).
 
+When you're done, tell the user what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first), which of these checks you ran, and what is still unverified.
+
 ## Errors
+
+If the same call fails twice, stop retrying it. Read the whole error (status, body and request ID), check the docs page and the installed SDK types, then change the request or the approach.
 
 | Symptom | Cause | Fix |
 |---|---|---|

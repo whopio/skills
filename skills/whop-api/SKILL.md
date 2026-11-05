@@ -24,7 +24,7 @@ The foundation for every Whop integration: which credential to use, how to set u
 ## Before you start
 
 1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
-2. Fetch `https://docs.whop.com/developer/quickstart.md`, `https://docs.whop.com/developer/guides/auth-scoping.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+2. Fetch `https://docs.whop.com/developer/quickstart.md` and `https://docs.whop.com/developer/guides/auth-scoping.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
 3. Confirm what is being built. Building Whop into your own product starts with an API key. Building an app that runs inside Whop starts with the Whop CLI, not an API key; that is `whop-apps`.
 4. Confirm the environment. Sandbox (`https://sandbox.whop.com`, API `https://sandbox-api.whop.com/api/v1`) and production (`https://whop.com`, API `https://api.whop.com/api/v1`) share nothing: separate dashboards, keys, webhooks and data.
 5. Confirm the language. The docs show SDKs for TypeScript (`@whop/sdk`), Python (`whop-sdk`) and Ruby (`whop_sdk`).
@@ -207,7 +207,11 @@ Tool naming, prepare-and-confirm, what the plugin's connection excludes, and err
 2. Check what the key can do before you hit a `403`: `whop.permissions.list({ resource_id: "biz_xxxxxxxxxxxxx", actions: "payment:basic:read" })` returns each action with `granted`.
 3. Re-send a money-moving `POST` with the same idempotency key and confirm the response carries `Idempotent-Replayed: true` and nothing ran twice.
 
+When you're done, tell the user what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first), which of these checks you ran, and what is still unverified.
+
 ## Errors
+
+If the same call fails twice, stop retrying it. Read the whole error (status, body and request ID), check the docs page and the installed SDK types, then change the request or the approach.
 
 | Symptom | Cause | Fix |
 |---|---|---|

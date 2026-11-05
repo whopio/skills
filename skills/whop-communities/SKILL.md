@@ -23,7 +23,7 @@ Whop chat renders inside your own product through the chat elements, authenticat
 ## Before you start
 
 1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
-2. Fetch `https://docs.whop.com/developer/guides/chat/quickstart.md`, `https://docs.whop.com/developer/communities/overview.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+2. Fetch `https://docs.whop.com/developer/guides/chat/quickstart.md` and `https://docs.whop.com/developer/communities/overview.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
 3. Create an account API key in the developer dashboard and keep it on the server as `WHOP_API_KEY`. Set up the client with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
 4. Find your account ID (`biz_...`) in the dashboard URL: `whop.com/dashboard/biz_XXXXXXXXX/`.
 5. Decide how users authenticate: **account-scoped tokens** (your app has its own users; no Whop sign-in) or **OAuth** (users sign in to Whop). Most products want account-scoped tokens.
@@ -227,7 +227,11 @@ The `whop` MCP tools act on the signed-in user's **live** account and can't reac
 4. Create a DM with your `account_id` and confirm it appears in `DmsListElement` with the same `companyId`.
 5. For a test environment, set the WhopElements `environment` option to `"sandbox"` and use sandbox keys; production is the default.
 
+When you're done, tell the user what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first), which of these checks you ran, and what is still unverified.
+
 ## Errors
+
+If the same call fails twice, stop retrying it. Read the whole error (status, body and request ID), check the docs page and the installed SDK types, then change the request or the approach.
 
 | Symptom | Cause | Fix |
 |---|---|---|

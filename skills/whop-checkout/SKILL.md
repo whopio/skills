@@ -23,7 +23,7 @@ Whop prices everything through a **variant** (one price of a product). The buyer
 ## Before you start
 
 1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
-2. Fetch `https://docs.whop.com/developer/guides/accept-payments.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`, plus the guide for the path you pick below. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+2. Fetch `https://docs.whop.com/developer/guides/accept-payments.md`, plus the guide for the path you pick below. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
 3. Confirm the environment. Sandbox (`https://sandbox-api.whop.com/api/v1`, dashboard at `sandbox.whop.com`) supports cards only: no Apple Pay, Google Pay, or Elements yet. Test cards are in [references/testing.md](references/testing.md).
 4. Get the account ID (`biz_...`) and, for an existing price, the variant ID (`plan_...`; variant IDs keep the `plan_` prefix).
 5. Server code needs an API key and a client. Set that up with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
@@ -196,7 +196,11 @@ The `whop` MCP tools act on the signed-in user's **live** account and can't reac
 3. Use `5385 3083 6013 5181` (enter `Checkout1!`) to exercise 3DS.
 4. Elements and wallets have no sandbox yet: test embedded checkout, the return page, Express Checkout and Apple Pay in production, on a real device in Safari for Apple Pay.
 
+When you're done, tell the user what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first), which of these checks you ran, and what is still unverified.
+
 ## Errors
+
+If the same call fails twice, stop retrying it. Read the whole error (status, body and request ID), check the docs page and the installed SDK types, then change the request or the approach.
 
 | Symptom | Cause | Fix |
 |---|---|---|

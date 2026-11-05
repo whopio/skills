@@ -23,7 +23,7 @@ Money leaves a Whop balance two ways: a **transfer** moves it to another Whop ba
 ## Before you start
 
 1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
-2. Fetch `https://docs.whop.com/developer/platforms/manual-payouts.md`, `https://docs.whop.com/developer/payouts/overview.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+2. Fetch `https://docs.whop.com/developer/platforms/manual-payouts.md` and `https://docs.whop.com/developer/payouts/overview.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
 3. Set up the client with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`). Money calls use an **Account API key**, which is a secret: keep it on your server. Browsers get a short-lived access token instead (see [references/payout-portal.md](references/payout-portal.md)).
 4. Build and test against sandbox first: `https://sandbox-api.whop.com/api/v1`, or `environment: WhopEnvironment.Sandbox` on the client.
 5. Know who you are paying. A recipient needs a Whop account (a connected account or a user) before a transfer, and a completed verification plus a payout method before a payout. Creating and verifying connected accounts is `whop-platforms`.
@@ -189,7 +189,11 @@ The `whop` MCP tools act on the signed-in user's **live** account and can't reac
 4. Quote and create a payout to a sandbox payout method; watch `status` move with `payout.updated`.
 5. Mount the payout portal with a scoped token and check balance, withdraw and activity all load.
 
+When you're done, tell the user what changed, which environment it targets (sandbox or production; if that isn't decided yet, say so and recommend sandbox first), which of these checks you ran, and what is still unverified.
+
 ## Errors
+
+If the same call fails twice, stop retrying it. Read the whole error (status, body and request ID), check the docs page and the installed SDK types, then change the request or the approach.
 
 | Symptom | Cause | Fix |
 |---|---|---|
