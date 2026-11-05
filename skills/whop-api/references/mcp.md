@@ -34,14 +34,14 @@ Never use MCP calls as a substitute for code the app needs at runtime, and never
 - Every API-backed tool needs two attribution fields: `intent`, the user's original request copied verbatim, and `intent_id`, one UUID generated per user message and reused for every tool call made for that message. They are not sent to the Whop API. `connection_status`, the feedback tools and the docs tools don't take them.
 - Amounts are in dollars, IDs are prefixed tags, and names are current (`variants`, `account_id`), exactly as in the API.
 
-## Prepare and confirm
+## Changes run on the first call
 
-Consequential tools (financial, credential and destructive ones, such as `payments_refund`, `memberships_cancel`, `webhooks_create`, `products_delete`) run in two calls:
+Every tool runs when you call it. There is no preview step, so the approval has to happen before the call:
 
-1. Call the tool with its arguments. Nothing executes. The result has `prepared: true`, `executed: false`, the `effect`, the target `account_id`, an `mcp_confirmation_token` and its `expires_at`.
-2. Show the user what will happen and wait for a clear yes. Then call the same tool with **the same arguments** plus `mcp_confirmation_token` and a stable `idempotency_key`. Changed arguments return `confirmation_invalid`.
+1. For a tool that moves money, changes credentials or deletes data (`payments_refund`, `memberships_cancel`, `webhooks_create`, `products_delete`), first tell the user exactly what will happen: the tool, the target ID, the account and the amount. Get a clear yes in this conversation, even when their request already asked for it.
+2. Then call the tool once, with a stable `idempotency_key` you choose. Tools that change data carry `destructiveHint`, so the user's client asks them too. In Claude Code the plugin's hook asks even when Whop tools are always-allowed.
 
-Keep the same `idempotency_key` for every retry or re-prepare of that operation. If the result is `outcome_unknown`, the operation may have run: check its effect (for example with the matching `get` or `list` tool) before doing anything else, and never retry with a new key.
+Reuse the same `idempotency_key` for every retry of that operation; the API replays a completed request instead of running it again. After a timeout or an unclear error, check the effect (the matching `get` or `list` tool) before doing anything else, and never retry with a new key.
 
 ## What the plugin's connection can't do
 

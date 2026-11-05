@@ -1,0 +1,5 @@
+interface:
+  display_name: "Run a Whop business"
+  short_description: "Manage a live Whop store: products, payments, refunds, ads and sites"
+  brand_color: "#FA4616"
+  default_prompt: "Use $whop-operate to show how much revenue my Whop business made this month and compare it with last month."

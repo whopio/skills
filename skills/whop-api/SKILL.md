@@ -14,7 +14,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.4.0"
+  version: "0.5.0"
 ---
 
 # Whop API
@@ -184,9 +184,9 @@ When the `whop` MCP tools are available, use them to fill in what the code needs
 1. `connection_status` shows who is signed in. Get the business from `accounts_list` and pass `account_id` explicitly.
 2. Look things up: `products_list` and `variants_list` for the IDs a checkout needs, `webhooks_list` for existing endpoints, `api-keys_permissions` for what a key can do.
 3. Every operation tool takes `intent` (the user's request) and `intent_id` (one UUID per user message).
-4. Anything that creates, changes or deletes data is a real production change. Do it only when the user asks, show the prepared preview, and confirm with the token and a stable `idempotency_key`.
+4. Anything that creates, changes or deletes data is a real production change that runs on the first call. Do it only when the user asks: say what will happen, get their yes, then call once with a stable `idempotency_key`.
 
-Tool naming, prepare-and-confirm, what the plugin's connection excludes, and error codes: [references/mcp.md](references/mcp.md).
+Tool naming, approvals and retries, what the plugin's connection excludes, and error codes: [references/mcp.md](references/mcp.md).
 
 ## Route to the right skill
 

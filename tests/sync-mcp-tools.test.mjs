@@ -128,9 +128,9 @@ test("eval mock schemas mirror the server, and mocks of missing tools are report
   assert.deepEqual(shared.map((t) => t.name), ["connection_status", "widgets_delete"]);
   const del = shared[1];
   assert.deepEqual(del.inputSchema.required, ["id", "intent", "intent_id"]);
-  assert.ok(del.inputSchema.properties.mcp_confirmation_token);
+  assert.equal(del.inputSchema.properties.mcp_confirmation_token, undefined);
   assert.ok(del.inputSchema.properties.idempotency_key);
-  assert.match(del.description, /Two-step tool/);
+  assert.doesNotMatch(del.description, /Two-step/);
 
   assert.match(stderr, /case-a\/mocks\/whop\/docs_search\.md mocks a tool the server doesn't have/);
   assert.match(report, /### Eval mocks for tools the server no longer has\n\n- `evals\/case-a\/mocks\/whop\/docs_search\.md`/);

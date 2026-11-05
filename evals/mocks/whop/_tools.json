@@ -103,10 +103,10 @@
         "type": "object"
       },
       "annotations": {
+        "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": false,
-        "readOnlyHint": true,
         "title": "List Accounts"
       }
     },
@@ -155,16 +155,16 @@
         "type": "object"
       },
       "annotations": {
+        "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": false,
-        "readOnlyHint": true,
         "title": "Retrieve Payment"
       }
     },
     {
       "name": "payments_refund",
-      "description": "Refunds all or part of a payment through the processor that charged it, and updates its membership to match. The buyer is emailed, the affiliate commission on the payment is clawed back, and any open Resolution Center case on the payment is closed.\n\nTwo-step tool. Without mcp_confirmation_token, calling it is a SAFE PREVIEW: nothing executes, no money moves, no data changes — it returns exactly what would happen plus a confirmation token. Show that preview to the user. Executing is the user's decision, not yours: call again with the token once they approve, in the moment or through standing permission they have given you.",
+      "description": "Refunds all or part of a payment through the processor that charged it, and updates its membership to match. The buyer is emailed, the affiliate commission on the payment is clawed back, and any open Resolution Center case on the payment is closed.",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
@@ -193,13 +193,9 @@
               "null"
             ]
           },
-          "mcp_confirmation_token": {
-            "type": "string",
-            "description": "Leave unset on the first call to prepare this operation and receive a confirmation token. Pass the token back, after the user approves, to execute."
-          },
           "idempotency_key": {
             "type": "string",
-            "description": "Caller-chosen stable retry key. Required when executing with a confirmation token; reuse the same key when retrying. The native API replays completed requests and rejects requests still in flight."
+            "description": "Caller-chosen stable retry key. Reuse the same key when retrying after a timeout or error. The native API replays completed requests and rejects requests still in flight."
           },
           "intent": {
             "type": "string",
@@ -224,10 +220,10 @@
         "type": "object"
       },
       "annotations": {
+        "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": true,
         "openWorldHint": false,
-        "readOnlyHint": false,
         "title": "Refund Payment"
       }
     },
@@ -364,10 +360,10 @@
         "type": "object"
       },
       "annotations": {
+        "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": false,
-        "readOnlyHint": true,
         "title": "List Products"
       }
     },
@@ -505,10 +501,10 @@
         "type": "object"
       },
       "annotations": {
+        "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": false,
-        "readOnlyHint": true,
         "title": "List Variants"
       }
     }

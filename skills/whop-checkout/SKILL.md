@@ -13,7 +13,7 @@ description: >-
 license: Apache-2.0
 metadata:
   author: whop
-  version: "0.4.0"
+  version: "0.5.0"
 ---
 
 # Whop Checkout
@@ -187,7 +187,7 @@ The `whop` MCP tools act on the signed-in user's **live** account and can't reac
 - Get the IDs the checkout needs: `products_list` and `variants_list` (pass `account_id`), `checkout-configurations_list`.
 - Debug a live payment: `payments_get`, `payments_status`, `payments_fees`.
 - Create a product or variant with `products_create` / `variants_create` only when the user wants it in their live account. App code still references or creates them with the SDK, tested in sandbox.
-- `payments_create`, `payments_refund`, `payments_void` and `setup-intents_create` are prepare-and-confirm tools that touch real money: show the preview and wait for the user's yes.
+- `payments_create`, `payments_refund`, `payments_void` and `setup-intents_create` touch real money and run on the first call: say what will happen and wait for the user's yes before calling one.
 
 ## Verify
 
