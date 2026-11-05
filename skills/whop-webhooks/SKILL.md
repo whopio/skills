@@ -3,13 +3,12 @@ name: whop-webhooks
 description: >-
   Receive and verify Whop webhooks: create an endpoint, verify signatures with
   unwrapWebhook from @whop/sdk/helpers, handle payment, membership, refund,
-  dispute, invoice, payout and app-install events, deduplicate retries, and test
-  locally. Use when: "Whop webhook", "listen for payments", "fulfill after
+  dispute, invoice, payout and app-install events, deduplicate retries, and
+  test locally. Use when: "Whop webhook", "listen for payments", "fulfill after
   checkout", "grant access when someone pays", "revoke access when a
-  subscription ends", "webhook signature failed", "Whop events aren't arriving".
-  Chain with: whop-checkout for what creates the payment, whop-billing for
-  acting on memberships, whop-api for client setup. NOT for: running a live
-  store by hand (use the Whop CLI or whop plugin), ad conversion tracking.
+  subscription ends", "webhook signature failed", "Whop events aren't
+  arriving". NOT for: ad conversion tracking, running a live store by hand (use
+  the whop CLI).
 license: Apache-2.0
 metadata:
   author: whop
@@ -22,10 +21,12 @@ Whop sends a signed `POST` to your server when something happens: a payment succ
 
 ## Before you start
 
-1. Fetch `https://docs.whop.com/developer/guides/webhooks.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs.
-2. Confirm the environment. Sandbox (`https://sandbox-api.whop.com/api/v1`, dashboard at `sandbox.whop.com`) and production have separate webhooks and secrets.
-3. Confirm the server framework before writing a handler. Framework handlers are in [references/frameworks.md](references/frameworks.md).
-4. Creating a webhook through the API needs an API key and a client. Set that up with `whop-api`.
+1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
+2. Fetch `https://docs.whop.com/developer/guides/webhooks.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+3. Confirm the environment. Sandbox (`https://sandbox-api.whop.com/api/v1`, dashboard at `sandbox.whop.com`) and production have separate webhooks and secrets.
+4. Confirm the server framework before writing a handler. Framework handlers are in [references/frameworks.md](references/frameworks.md).
+5. Creating a webhook through the API needs an API key and a client. Set that up with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
+6. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
 
@@ -153,3 +154,4 @@ Retries: 12 after the first attempt, at 30s, 2m, 8m, 30m, 1h, 3h, 6h, then every
 - [references/verify-without-sdk.md](references/verify-without-sdk.md): read when there's no Whop SDK for the language (Go, Elixir, ...).
 - [references/troubleshooting.md](references/troubleshooting.md): read when deliveries fail or signatures don't verify.
 - [scripts/send-test-event.mjs](scripts/send-test-event.mjs): run to send signed test events to a local handler (see Verify).
+- [references/skill-feedback.md](references/skill-feedback.md): read when the user says this skill gave wrong, outdated or missing guidance, or the docs contradicted it during the task.

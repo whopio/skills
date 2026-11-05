@@ -1,20 +1,16 @@
 ---
 name: whop-migrate
 description: >-
-  Move a payment integration to Whop, or upgrade old Whop code to current API
-  names. Scans a codebase for Stripe or other processor code, maps products,
-  prices, checkout, customers, subscriptions and webhooks to Whop's products,
-  variants, checkout configurations, members, memberships and events, and
-  rewrites old Whop calls (plans, companies, withdrawals, top-ups, API v2,
-  public GraphQL, @whop/api, cents) to current ones. Use when: "migrate from
-  Stripe to Whop", "switch payment processor to Whop", "replace Stripe
-  Checkout with Whop", "move subscribers to Whop", "update old Whop code",
-  "Whop API v2 deprecated", "@whop/api is shut down", "plans renamed to
-  variants", "company_id vs account_id". Chain with: whop-api for client setup,
-  whop-checkout for the new checkout, whop-webhooks for the new handler,
-  whop-billing for memberships. NOT for: a new integration with no existing
-  payment code (use whop-checkout), payouts and transfers (use whop-payouts),
-  connected accounts (use whop-platforms), app auth (use whop-apps).
+  Move a payment integration to Whop, or upgrade old Whop code. Scans for
+  Stripe or other processor code and maps products, prices, checkout,
+  customers, subscriptions and webhooks to Whop; rewrites old Whop names
+  (plans, companies, withdrawals, top-ups, API v2, GraphQL, @whop/api, cents)
+  to current ones. Use when: "migrate from Stripe to Whop", "switch payment
+  processor to Whop", "replace Stripe Checkout with Whop", "move subscribers to
+  Whop", "update old Whop code", "@whop/api is shut down", "plans renamed to
+  variants", "company_id vs account_id". NOT for: a new integration with no
+  payment code (whop-checkout), payouts (whop-payouts), connected accounts
+  (whop-platforms), app auth (whop-apps).
 license: Apache-2.0
 metadata:
   author: whop
@@ -27,10 +23,11 @@ Two jobs: moving an existing integration from Stripe or another processor onto W
 
 ## Before you start
 
-1. Fetch `https://docs.whop.com/developer/api/migrate-from-previous-versions.md`, `https://docs.whop.com/api-reference/stability.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs.
+1. Fetch `https://docs.whop.com/developer/api/migrate-from-previous-versions.md`, `https://docs.whop.com/api-reference/stability.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
 2. Find out which job this is: payment code from another processor, old Whop code, or both. Look before asking: the scans below answer it.
-3. Set up a sandbox client first (`whop-api`). Migrate and test against `https://sandbox-api.whop.com/api/v1` before touching production.
+3. Set up a sandbox client first (`whop-api`). Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`). Migrate and test against `https://sandbox-api.whop.com/api/v1` before touching production.
 4. Check the installed `@whop/sdk` version. Every name in this skill was checked against 2.7.0; on another version, confirm a name in the package's `reference.md` before using it.
+5. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
 
@@ -182,3 +179,4 @@ The `whop` MCP tools act on the signed-in user's **live** account and can't reac
 
 - [references/legacy-map.md](references/legacy-map.md): read when upgrading old Whop code. Search command, every old → new name, v2 routes and GraphQL operations.
 - [references/processor-mapping.md](references/processor-mapping.md): read when moving from Stripe or another processor. Codebase scans, the concept map, and moving subscribers.
+- [references/skill-feedback.md](references/skill-feedback.md): read when the user says this skill gave wrong, outdated or missing guidance, or the docs contradicted it during the task.

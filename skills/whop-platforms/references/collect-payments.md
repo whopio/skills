@@ -69,7 +69,7 @@ Before transferring:
 
 ## Sources
 
-- https://docs.whop.com/developer/platforms/collect-payments-for-connected-accounts.md
+- https://docs.whop.com/developer/platforms/collect-payments-for-subaccounts.md
 - https://docs.whop.com/api-reference/checkout-configurations/create-checkout-configuration.md
 - https://docs.whop.com/api-reference/beta/transfers/create-transfer.md
-- https://docs.whop.com/developer/platforms/enroll-connected-accounts.md
+- https://docs.whop.com/developer/platforms/enroll-subaccounts.md

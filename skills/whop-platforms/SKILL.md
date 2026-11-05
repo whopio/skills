@@ -1,20 +1,15 @@
 ---
 name: whop-platforms
 description: >-
-  Run a marketplace or platform on Whop: create connected accounts for your
-  sellers, onboard them with account links, verify identity (KYC/KYB) through
-  the hosted flow, the API or the Verifications element, answer RFIs, and
-  collect payments for connected accounts with an application fee. Use when:
-  "build a marketplace", "onboard a seller", "create a connected account",
-  "sub-merchant", "send sellers to KYC", "verify my sellers", "KYB",
-  "verification needs more information", "take a platform fee", "application
-  fee", "split payments with sellers", "embed onboarding in my app". Chain
-  with: whop-payouts to pay connected accounts and embed their payout portal,
-  whop-webhooks for connected-account events, whop-checkout for the checkout
-  UI, whop-api for client setup. NOT for: transfers and payouts (use
-  whop-payouts), a single store taking payments (use whop-checkout), moving
-  from Stripe Connect (use whop-migrate), apps installed inside Whop (use
-  whop-apps).
+  Run a marketplace or platform on Whop: create connected accounts for sellers,
+  onboard them with account links, verify identity (KYC/KYB) through the hosted
+  flow, the API or the Verifications element, answer RFIs, and collect payments
+  for connected accounts with an application fee. Use when: "build a
+  marketplace", "onboard a seller", "create a connected account",
+  "sub-merchant", "KYC", "KYB", "verify my sellers", "verification needs more
+  information", "take a platform fee", "split payments with sellers". NOT for:
+  transfers and payouts (whop-payouts), a single store (whop-checkout), moving
+  from Stripe Connect (whop-migrate), apps inside Whop (whop-apps).
 license: Apache-2.0
 metadata:
   author: whop
@@ -27,10 +22,12 @@ A platform is a Whop account with connected accounts under it: one per seller, c
 
 ## Before you start
 
-1. Fetch `https://docs.whop.com/developer/platforms/enroll-connected-accounts.md`, `https://docs.whop.com/developer/platforms/collect-payments-for-connected-accounts.md`, `https://docs.whop.com/developer/verification/overview.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs.
-2. Set up the client with `whop-api`, using the **platform's Account API key**. That key decides which platform owns every connected account you create. It is a secret: keep it on your server.
-3. Build against sandbox first (`https://sandbox-api.whop.com/api/v1`).
-4. Decide where onboarding happens: a Whop-hosted page (account link), your own page (Verifications element), or fully through the API.
+1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
+2. Fetch `https://docs.whop.com/developer/platforms/enroll-subaccounts.md`, `https://docs.whop.com/developer/platforms/collect-payments-for-subaccounts.md`, `https://docs.whop.com/developer/verification/overview.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+3. Set up the client with `whop-api`, using the **platform's Account API key**. That key decides which platform owns every connected account you create. It is a secret: keep it on your server. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
+4. Build against sandbox first (`https://sandbox-api.whop.com/api/v1`).
+5. Decide where onboarding happens: a Whop-hosted page (account link), your own page (Verifications element), or fully through the API.
+6. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
 
@@ -216,3 +213,4 @@ The `whop` MCP tools act on the signed-in user's **live** account and can't reac
 - [references/verification.md](references/verification.md): read when verifying through the API (prefill, documents, KYB, business structures), answering RFIs, or handling rejections.
 - [references/collect-payments.md](references/collect-payments.md): read when choosing between direct charges and transfers, or working out fees, refunds and disputes.
 - [references/elements.md](references/elements.md): read when embedding the Verifications or Dashboard elements.
+- [references/skill-feedback.md](references/skill-feedback.md): read when the user says this skill gave wrong, outdated or missing guidance, or the docs contradicted it during the task.

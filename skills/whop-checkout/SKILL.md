@@ -1,20 +1,15 @@
 ---
 name: whop-checkout
 description: >-
-  Take payments with Whop: create products and variants (one-time or
-  recurring), share a checkout link or checkout configuration, embed the
-  Checkout element or Express Checkout with @whop/elements-react, build a form
-  with payment elements and card fields, add Apple Pay or Google Pay, save a
-  payment method and charge it later, add promo codes and tax IDs, test with
-  sandbox cards, and sell from iOS or React Native. Use when: "Whop checkout", "accept payments", "create a
-  subscription price", "checkout link", "embed checkout in my page", "Apple Pay
-  button", "save a card and charge later", "Whop paywall in my iOS app",
-  "test card". Chain with: whop-webhooks to fulfill once the payment succeeds,
-  whop-billing for memberships, refunds and invoices after the sale, whop-api
-  for client setup. NOT for: cancelling or checking a subscription (use
-  whop-billing), connected accounts or charging on behalf of sellers (use
-  whop-platforms), apps inside Whop (use whop-apps), moving from Stripe (use
-  whop-migrate).
+  Take payments with Whop: products and variants (one-time or subscription),
+  checkout links, the embedded Checkout element, Express Checkout, card fields,
+  Apple Pay and Google Pay, saved payment methods, promo codes, sandbox test
+  cards, iOS and React Native. Use when: "Whop checkout", "accept payments",
+  "sell a subscription", "create a price", "checkout link", "embed checkout",
+  "paywall", "Apple Pay button", "save a card and charge later", "test card".
+  NOT for: access checks, cancellations or refunds (whop-billing), fulfilling
+  orders (whop-webhooks), charging for marketplace sellers (whop-platforms),
+  moving from Stripe (whop-migrate).
 license: Apache-2.0
 metadata:
   author: whop
@@ -27,10 +22,12 @@ Whop prices everything through a **variant** (one price of a product). The buyer
 
 ## Before you start
 
-1. Fetch `https://docs.whop.com/developer/guides/accept-payments.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`, plus the guide for the path you pick below. If they disagree with this skill, follow the docs.
-2. Confirm the environment. Sandbox (`https://sandbox-api.whop.com/api/v1`, dashboard at `sandbox.whop.com`) supports cards only: no Apple Pay, Google Pay, or Elements yet. Test cards are in [references/testing.md](references/testing.md).
-3. Get the account ID (`biz_...`) and, for an existing price, the variant ID (`plan_...`; variant IDs keep the `plan_` prefix).
-4. Server code needs an API key and a client. Set that up with `whop-api`.
+1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
+2. Fetch `https://docs.whop.com/developer/guides/accept-payments.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`, plus the guide for the path you pick below. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+3. Confirm the environment. Sandbox (`https://sandbox-api.whop.com/api/v1`, dashboard at `sandbox.whop.com`) supports cards only: no Apple Pay, Google Pay, or Elements yet. Test cards are in [references/testing.md](references/testing.md).
+4. Get the account ID (`biz_...`) and, for an existing price, the variant ID (`plan_...`; variant IDs keep the `plan_` prefix).
+5. Server code needs an API key and a client. Set that up with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
+6. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
 
@@ -223,3 +220,4 @@ More in [references/troubleshooting.md](references/troubleshooting.md).
 - [references/mobile.md](references/mobile.md): read when selling from an iOS or React Native app.
 - [references/testing.md](references/testing.md): read when testing in sandbox.
 - [references/troubleshooting.md](references/troubleshooting.md): read when a checkout or charge fails.
+- [references/skill-feedback.md](references/skill-feedback.md): read when the user says this skill gave wrong, outdated or missing guidance, or the docs contradicted it during the task.

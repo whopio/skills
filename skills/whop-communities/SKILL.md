@@ -2,19 +2,14 @@
 name: whop-communities
 description: >-
   Embed Whop chat in your own web or iOS app and use Whop's community APIs:
-  mint chat access tokens, sync your users, render the Chat, DMs list and
-  search elements, theme them, create channels, DMs and support chats, send
-  messages and reactions, and manage forums, forum posts, courses, chapters,
-  lessons and students. Use when: "embed Whop chat", "add chat to my React
-  app", "chat token endpoint", "ChatElement", "DMs list", "support chat for a
-  customer", "open a DM between two users", "send a message to a Whop
-  channel", "post to a Whop forum", "create a course with the API", "read
-  lesson completions", "chat shows unauthorized".
-  Chain with: whop-api for client setup, whop-platforms for enrolling your
-  users as connected accounts, whop-webhooks for chat.message.created,
-  whop-apps when the code runs inside a Whop app. NOT for: building an app
-  that runs inside Whop (use whop-apps), checkout or payment elements (use
-  whop-checkout), payout or wallet elements (use whop-payouts).
+  chat access tokens, user sync, the Chat, DMs list and search elements,
+  theming, channels, DMs, support chats, messages, reactions, forums and
+  courses. Use when: "embed Whop chat", "add chat to my React app", "chat token
+  endpoint", "ChatElement", "DMs list", "support chat for a customer", "open a
+  DM", "send a message to a Whop channel", "post to a Whop forum", "create a
+  course with the API", "lesson completions", "chat shows unauthorized". NOT
+  for: apps that run inside Whop (whop-apps), payment elements (whop-checkout),
+  wallet elements (whop-payouts).
 license: Apache-2.0
 metadata:
   author: whop
@@ -27,10 +22,12 @@ Whop chat renders inside your own product through the chat elements, authenticat
 
 ## Before you start
 
-1. Fetch `https://docs.whop.com/developer/guides/chat/quickstart.md`, `https://docs.whop.com/developer/communities/overview.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs.
-2. Create an account API key in the developer dashboard and keep it on the server as `WHOP_API_KEY`. Set up the client with `whop-api`.
-3. Find your account ID (`biz_...`) in the dashboard URL: `whop.com/dashboard/biz_XXXXXXXXX/`.
-4. Decide how users authenticate: **account-scoped tokens** (your app has its own users; no Whop sign-in) or **OAuth** (users sign in to Whop). Most products want account-scoped tokens.
+1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
+2. Fetch `https://docs.whop.com/developer/guides/chat/quickstart.md`, `https://docs.whop.com/developer/communities/overview.md` and the changelog at `https://docs.whop.com/developer/api/versioning.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)).
+3. Create an account API key in the developer dashboard and keep it on the server as `WHOP_API_KEY`. Set up the client with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
+4. Find your account ID (`biz_...`) in the dashboard URL: `whop.com/dashboard/biz_XXXXXXXXX/`.
+5. Decide how users authenticate: **account-scoped tokens** (your app has its own users; no Whop sign-in) or **OAuth** (users sign in to Whop). Most products want account-scoped tokens.
+6. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
 
@@ -250,3 +247,4 @@ The `whop` MCP tools act on the signed-in user's **live** account and can't reac
 - [references/chat-auth.md](references/chat-auth.md): read when choosing account-scoped tokens or OAuth, syncing users, or scoping tokens.
 - [references/chat-api.md](references/chat-api.md): read when posting, reading or moderating chat from your backend, managing DMs and support inboxes, or reacting.
 - [references/forums-and-courses.md](references/forums-and-courses.md): read when working with forums, forum posts, courses, chapters, lessons, students or lesson completions.
+- [references/skill-feedback.md](references/skill-feedback.md): read when the user says this skill gave wrong, outdated or missing guidance, or the docs contradicted it during the task.

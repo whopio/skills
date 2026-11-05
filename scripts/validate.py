@@ -137,7 +137,8 @@ def check_skill(skill_dir: Path, version: str) -> None:
             ref = str(ref_file.relative_to(references_dir))
             if ref not in linked:
                 error(ref_file, f"not linked from {relative(skill_md)}")
-            if "## Sources" not in ref_file.read_text():
+            # skill-feedback.md is generated from scripts/skill-feedback.template.md and cites no docs.
+            if ref != "skill-feedback.md" and "## Sources" not in ref_file.read_text():
                 error(ref_file, "has no '## Sources' section")
 
     scripts_dir = skill_dir / "scripts"
@@ -303,6 +304,15 @@ def check_mcp_tool_names() -> None:
                     error(f"{relative(path)}:{line_number}", f"MCP tool {token!r} isn't on the plugin's MCP route (scripts/mcp-tools.json)")
 
 
+def check_skill_feedback() -> None:
+    import subprocess
+
+    result = subprocess.run([sys.executable, str(ROOT / "scripts" / "build-skill-feedback.py"), "--check"], capture_output=True, text=True)
+    if result.returncode != 0:
+        for line in result.stdout.strip().splitlines() or ["skill-feedback.md files are out of date"]:
+            error(SKILLS_DIR, line)
+
+
 def check_gemini_commands() -> None:
     import subprocess
 
@@ -344,7 +354,7 @@ def check_manifests(version: str, skill_names: list[str]) -> None:
 
     readme = (ROOT / "README.md").read_text() if (ROOT / "README.md").is_file() else ""
     for name in skill_names:
-        if f"skills/{name}" not in readme:
+        if f"(skills/{name})" not in readme:
             error("README.md", f"skills table does not link skills/{name}")
 
 
@@ -452,6 +462,7 @@ def main() -> int:
     check_patterns(skill_names)
     check_plugin_extras(skill_names)
     check_gemini_commands()
+    check_skill_feedback()
     check_mcp_tool_names()
     check_no_symlinks()
 
