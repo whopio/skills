@@ -1,0 +1,20 @@
+---
+trigger: model_decision
+description: "Building on Whop: @whop/sdk, Whop checkout and payments, webhooks, memberships and access checks, payouts, connected accounts, Whop apps and chat"
+---
+
+<!-- Generated from scripts/rules.template.md by scripts/build-rules.py. Edit the template, not this file. -->
+
+# Building on Whop
+
+Load the matching `whop-*` skill before writing Whop code (or the `whop` skill to pick one); it holds the details and the current docs links. These are the checks the plugin's Claude Code hooks run on every edit, for hosts that don't run hooks.
+
+- **Keys stay on the server.** Never put a Whop API key or webhook secret in browser or mobile code, a `"use client"` file, or a `NEXT_PUBLIC_`, `VITE_`, `EXPO_PUBLIC_` or `REACT_APP_` variable. Read the webhook secret from `process.env.WHOP_WEBHOOK_SECRET`; never commit it.
+- **Money is in dollars** (major currency units) in the API: `renewal_price: 29` is $29.00. Don't multiply by 100. Only Elements amounts on the page are in cents.
+- **Client:** `import { WhopClient, WhopEnvironment } from "@whop/sdk"` and `new WhopClient({ token: process.env.WHOP_API_KEY })`. Switch to sandbox with `environment: WhopEnvironment.Sandbox`, not a base URL. Build and test in sandbox first.
+- **Webhooks:** verify with `unwrapWebhook(rawBody, { headers, key })` from `@whop/sdk/helpers` before reading anything. Pass the raw body (`await request.text()`) and the `ws_...` secret exactly as Whop gave it (never base64-encoded). Branch on dotted `event.type` names (`payment.succeeded`, `membership.activated`, `membership.updated`), deduplicate on `webhook-id`, and return `2xx` within 5 seconds.
+- **Fulfill from the `payment.succeeded` webhook**, not from a return page or a client callback.
+- **Check access on the server** with `users.checkAccess` and return `403` when `has_access` is `false`.
+- **Send an `Idempotency-Key`** (`{ idempotencyKey }` as the SDK's second argument) on calls that move money.
+- **Use current names:** `variants` (not plans), `billing_type` (not `plan_type`), `accounts` and `account_id` (not companies or `company_id`), `payouts` (not withdrawals), `deposits` (not top-ups), `checkoutConfigurations` (not checkout sessions), `@whop/elements-react` (not `@whop/checkout`), and `@whop/sdk` (not `@whop/api`).
+- **The Whop MCP server is the live production account.** Use it to look up IDs and read the docs, not to test code. When a tool returns a prepared preview, show it to the user and run it only after they approve.
