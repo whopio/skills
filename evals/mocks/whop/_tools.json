@@ -2,7 +2,7 @@
   "tools": [
     {
       "name": "accounts_list",
-      "description": "Lists accounts visible to the credential. User tokens return the user's business accounts; Account API keys return the requesting account and its connected accounts.",
+      "description": "Lists accounts visible to the credential. User tokens return the user's business accounts; Account API keys return the requesting account and its subaccounts.",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
@@ -58,7 +58,7 @@
             "type": "string"
           },
           "parent_account_id": {
-            "description": "For platforms: the parent account ID whose direct connected accounts to return. Requires `payout:account:read` on the parent account.",
+            "description": "For platforms: the parent account ID whose direct subaccounts to return. Requires `payout:account:read` on the parent account.",
             "type": "string"
           },
           "query": {
@@ -233,7 +233,7 @@
     },
     {
       "name": "products_list",
-      "description": "Lists an account's products, or searches the public marketplace when you omit `account_id`.",
+      "description": "Lists an account's products, or searches the public marketplace when you omit `account_id`. Without the `access_pass:basic:read` permission on the account, including when signed out, the list holds only the products its store page lists.",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
@@ -246,7 +246,7 @@
             "type": "array"
           },
           "account_id": {
-            "description": "The unique identifier of the account to list products for. Omit to search the public marketplace.",
+            "description": "Account to list products for, prefixed `biz_`. Without the `access_pass:basic:read` permission on it, only the products its store page lists are returned. Omit to search the public marketplace.",
             "type": "string"
           },
           "after": {
@@ -258,7 +258,7 @@
             "type": "string"
           },
           "billing_types": {
-            "description": "Filter to products with a buyable variant of these billing models, such as `one_time` or `renewal`.",
+            "description": "Filter to products with a buyable variant of these billing models, such as `one_time` or `renewal`. On an account list, needs the `access_pass:basic:read` permission.",
             "items": {
               "enum": [
                 "renewal",
@@ -290,6 +290,10 @@
             "maximum": 100,
             "type": "integer"
           },
+          "include_total_count": {
+            "description": "Set to `true` to return the number of matching results in `page_info.total_count`. Send `first=0` as well to return the count without any results.",
+            "type": "boolean"
+          },
           "labels": {
             "description": "Filter to only products carrying all of these labels. Labels are matched lowercased.",
             "items": {
@@ -307,15 +311,23 @@
             "type": "string"
           },
           "order": {
-            "description": "The field to sort results by. Account lists default to `created_at`. Marketplace lists default to `discoverable_at` and accept `created_at` or `discoverable_at`. Cannot be combined with `query`.",
+            "description": "Field to sort results by. Account lists default to `created_at`, and `position` with `direction` `asc` matches the order the store page shows. Without the `access_pass:basic:read` permission, an account list sorts only by `created_at` or `position`. Marketplace lists default to `discoverable_at`, accept only `created_at` or `discoverable_at`, and can't be combined with `query`.",
+            "enum": [
+              "created_at",
+              "active_memberships_count",
+              "usd_gmv",
+              "usd_gmv_30_days",
+              "position",
+              "discoverable_at"
+            ],
             "type": "string"
           },
           "price_maximum": {
-            "description": "Only return products whose advertised buyable variant has a displayed price of at most this amount. Recurring variants use renewal price.",
+            "description": "Only return products whose advertised buyable variant has a displayed price of at most this amount. Recurring variants use renewal price. On an account list, needs the `access_pass:basic:read` permission.",
             "type": "number"
           },
           "price_minimum": {
-            "description": "Only return products whose advertised buyable variant has a displayed price of at least this amount. Recurring variants use renewal price.",
+            "description": "Only return products whose advertised buyable variant has a displayed price of at least this amount. Recurring variants use renewal price. On an account list, needs the `access_pass:basic:read` permission.",
             "type": "number"
           },
           "query": {
@@ -323,7 +335,7 @@
             "type": "string"
           },
           "visibilities": {
-            "description": "Filter to only products matching these visibility states. Ignored on the public marketplace list, which only returns visible products.",
+            "description": "Filter to only products matching these visibility states. Ignored on the public marketplace list, which only returns visible products. Without the `access_pass:basic:read` permission on the account, only `visible` matches anything.",
             "items": {
               "example": "visible",
               "type": "string"
