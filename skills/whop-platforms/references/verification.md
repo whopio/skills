@@ -61,7 +61,7 @@ Send the photos in the create request and skip the session. Individual verificat
 
 ## Read status
 
-`verifications.list({ account_id })` returns the account's verifications (`include_subaccounts` adds connected accounts); `verifications.retrieve({ id })` returns one.
+`verifications.list({ account_id })` returns the account's verifications (`include_subaccounts` adds subaccounts); `verifications.retrieve({ id })` returns one.
 
 | Status | Meaning | Your move |
 |---|---|---|

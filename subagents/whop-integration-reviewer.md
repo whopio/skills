@@ -1,6 +1,6 @@
 ---
 name: whop-integration-reviewer
-description: Read-only reviewer for code that integrates with Whop (payments, checkout, webhooks, memberships, payouts, connected accounts, Whop apps). Use after writing or changing Whop integration code, before shipping it, or when the user asks to audit or review their Whop integration. Reports findings with file:line and fixes; never edits.
+description: Read-only reviewer for code that integrates with Whop (payments, checkout, webhooks, memberships, payouts, subaccounts, Whop apps). Use after writing or changing Whop integration code, before shipping it, or when the user asks to audit or review their Whop integration. Reports findings with file:line and fixes; never edits.
 tools: Read, Grep, Glob, Bash
 skills:
   - whop-api

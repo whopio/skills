@@ -1,15 +1,16 @@
 ---
 name: whop-platforms
 description: >-
-  Run a marketplace or platform on Whop: create connected accounts for sellers,
-  onboard them with account links, verify identity (KYC/KYB) through the hosted
-  flow, the API or the Verifications element, answer RFIs, and collect payments
-  for connected accounts with an application fee. Use when: "build a
-  marketplace", "onboard a seller", "create a connected account",
-  "sub-merchant", "KYC", "KYB", "verify my sellers", "verification needs more
-  information", "take a platform fee", "split payments with sellers". NOT for:
-  transfers and payouts (whop-payouts), a single store (whop-checkout), moving
-  from Stripe Connect (whop-migrate), apps inside Whop (whop-apps).
+  Run a marketplace or platform on Whop: create subaccounts (formerly connected
+  accounts) for sellers, onboard them with account links, verify identity
+  (KYC/KYB) through the hosted flow, the API or the Verifications element,
+  answer RFIs, and collect payments for subaccounts with an application fee.
+  Use when: "build a marketplace", "onboard a seller", "create a subaccount",
+  "create a connected account", "sub-merchant", "KYC", "KYB", "verify my
+  sellers", "verification needs more information", "take a platform fee",
+  "split payments with sellers". NOT for: transfers and payouts (whop-payouts),
+  a single store (whop-checkout), moving from Stripe Connect (whop-migrate),
+  apps inside Whop (whop-apps).
 license: Apache-2.0
 metadata:
   author: whop
@@ -18,28 +19,30 @@ metadata:
 
 # Whop Platforms
 
-A platform is a Whop account with connected accounts under it: one per seller, creator or merchant. You create each connected account, send its owner through identity verification, then take payments for it (keeping an application fee) and pay it out.
+A platform is a Whop account with subaccounts under it: one per seller, creator or merchant. You create each subaccount, send its owner through identity verification, then take payments for it (keeping an application fee) and pay it out.
+
+Whop called subaccounts *connected accounts* until API version `2026-11-03-1`, so older docs, code and dashboards use that name. Nothing about creating or paying them changed, but on that version and later `include_connected_accounts` on payment and dispute lists is `include_subaccounts`; `@whop/sdk` 2.7.0 (which sends `2026-10-28`) still takes `include_connected_accounts`.
 
 ## Before you start
 
 1. **Inspect the project first.** Note the installed `@whop/sdk` version (`node_modules/@whop/sdk/package.json`; `whop-sdk` in Python, `whop_sdk` in Ruby), the framework, and whether the client targets sandbox or production. On `@whop/api` or `@whop/sdk` below 2.0, upgrade first (`whop-migrate`). If a name here doesn't compile, search the installed `node_modules/@whop/sdk/reference.md` for it and trust that over this skill.
 2. Fetch `https://docs.whop.com/developer/platforms/enroll-subaccounts.md`, `https://docs.whop.com/developer/platforms/collect-payments-for-subaccounts.md` and `https://docs.whop.com/developer/verification/overview.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
-3. Set up the client with `whop-api`, using the **platform's Account API key**. That key decides which platform owns every connected account you create. It is a secret: keep it on your server. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
+3. Set up the client with `whop-api`, using the **platform's Account API key**. That key decides which platform owns every subaccount you create. It is a secret: keep it on your server. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`).
 4. Build against sandbox first (`https://sandbox-api.whop.com/api/v1`).
 5. Decide where onboarding happens: a Whop-hosted page (account link), your own page (Verifications element), or fully through the API.
 6. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
 
-1. **The API key makes it a connected account.** `accounts.create` with the platform's Account API key creates a connected account under that platform; there is no parent field to send. `email` is required for a connected account and belongs to the seller, who gets setup and payment notifications.
+1. **The API key makes it a subaccount.** `accounts.create` with the platform's Account API key creates a subaccount under that platform; there is no parent field to send. `email` is required for a subaccount and belongs to the seller, who gets setup and payment notifications.
 2. **Set `metadata.external_id` to your own seller ID.** Create is idempotent on email plus `external_id`: the same pair returns the existing account, a new `external_id` creates a new account even for a used email. That makes retries safe.
 3. **Use `account_id` (`biz_`) everywhere.** `accountLinks.create`, `accessTokens.create`, `checkoutConfigurations.create` and `verifications.list` all take `account_id` in `@whop/sdk` 2.7.0. Some guides still show `company_id`; it is the old name.
 4. **Account links have two use cases only**: `account_onboarding` (identity verification) and `payouts_portal` (payouts, payout methods and verification). `return_url` and `refresh_url` must be `https`. Links expire (`expires_at`), so create one per visit.
 5. **Don't trust the verification webhook's payload for state.** `identity_profile.updated` fires on every change and tells you which profile changed, not its new state. Re-read with `verifications.list({ account_id })`.
 6. **A seller must be verified before money leaves.** Verification is required to pay out; accepting payments doesn't need it until the account reaches $5,000 in payments.
 7. **Fees are fixed amounts in major units.** `application_fee_amount: 1.23` is $1.23 per unit, in the variant's currency. It must be positive and less than the price. For a percentage fee, compute the amount from the price yourself.
-8. **Pick who owns the payment.** A direct charge on the connected account makes the seller pay Whop fees and handle refunds and disputes. Collecting on the platform and transferring later makes the platform the merchant of record for all of that.
-9. **Connected-account webhooks are opt-in.** A webhook on the platform with `child_resource_events: true` receives events from its connected accounts only (see `whop-webhooks`).
+8. **Pick who owns the payment.** A direct charge on the subaccount makes the seller pay Whop fees and handle refunds and disputes. Collecting on the platform and transferring later makes the platform the merchant of record for all of that.
+9. **Subaccount webhooks are opt-in.** A webhook on the platform with `child_resource_events: true` receives events from its subaccounts only (see `whop-webhooks`).
 10. **Browsers get scoped access tokens, never the API key.** Mint them on your server with an explicit `scoped_actions` list; without one the token inherits the key's full reach.
 
 ## Pick a path
@@ -152,7 +155,7 @@ Answered items leave the array; the verification moves to `processing`, then `ap
 
 ## Collect payments for a seller
 
-**Direct charge with an application fee.** Create the checkout on the connected account; Whop charges the buyer there and sends your fee to the platform.
+**Direct charge with an application fee.** Create the checkout on the subaccount; Whop charges the buyer there and sends your fee to the platform.
 
 ```ts
 import { WhopClient } from "@whop/sdk";
@@ -184,12 +187,12 @@ console.log(checkout.purchase_url);
 
 The `whop` MCP tools act on the signed-in user's **live** account and can't reach sandbox (`whop-api` covers connecting, `intent`/`intent_id`, and prepare-and-confirm). Its `docs_search` and `docs_query` read the docs pages this skill links. Use the tools to fill in and debug the code, not to replace it:
 
-- Inspect connected accounts: `accounts_get`, `accounts_list`, `verifications_list`, `identity-profiles_get`.
+- Inspect subaccounts: `accounts_get`, `accounts_list`, `verifications_list`, `identity-profiles_get`.
 - `accounts_create` and `account-links_create` exist but create real seller accounts and live onboarding links. Your platform does that per seller with the SDK and its Account API key; through MCP, only when the user asks for a specific account.
 
 ## Verify
 
-1. In sandbox, create a connected account with a test email and `external_id`, and repeat the call: the same `id` must come back.
+1. In sandbox, create a subaccount with a test email and `external_id`, and repeat the call: the same `id` must come back.
 2. Open the onboarding link, finish it, and confirm `verifications.list({ account_id })` shows the status you expect and `identity_profile.updated` reached your webhook (created with `child_resource_events: true`).
 3. Buy through the checkout with a sandbox test card and check the platform's balance received the fee and the seller's the rest (`financialActivity.list`, see `whop-payouts`).
 
@@ -201,16 +204,16 @@ If the same call fails twice, stop retrying it. Read the whole error (status, bo
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `400` `email is required` on `accounts.create` | Connected accounts need the owner's email | Pass `email` |
+| `400` `email is required` on `accounts.create` | Subaccounts need the owner's email | Pass `email` |
 | `400` `Unsupported fields: parent_account_id` | Tried to name the parent | Drop it; the API key sets the parent |
-| `A connected account cannot create its own connected accounts` | Called with a connected account's key | Use the platform's key |
+| `A connected account cannot create its own connected accounts` | Called with a subaccount's key | Use the platform's key |
 | Duplicate seller accounts | No `external_id`, or a new one per retry | Use your stable seller ID as `metadata.external_id` |
 | Account link `URL must start with 'https://'` | `http` or `localhost` return URLs | Use `https` URLs (a tunnel locally) |
 | Verification `400` `address_country_sanctioned` | Address in a sanctioned country or region | Whop can't support the user |
 | `400` `Cannot update an approved verification.` | Identity data is locked after approval | Start a new verification instead |
 | Verification `403` | Key or token lacks `identity:read` / `identity:write` | Add the scopes |
-| `application_fee_amount` rejected | Not positive, not below the price, or the account has no parent | Fix the amount; create the checkout on a connected account |
-| No connected-account events | Webhook lacks `child_resource_events: true` | Create it on the platform with that flag |
+| `application_fee_amount` rejected | Not positive, not below the price, or the account has no parent | Fix the amount; create the checkout on a subaccount |
+| No subaccount events | Webhook lacks `child_resource_events: true` | Create it on the platform with that flag |
 
 ## References
 

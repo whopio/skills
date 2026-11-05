@@ -50,7 +50,7 @@ For each hit, note what it does (sells, charges, stores a customer, grants acces
 | Reacts to a subscription ending or changing | `membership.updated` | `previous_attributes.status` holds the status it left |
 | Recovers a failed renewal | `payment.failed` | Send the buyer `recovery_url` when present |
 | Tracks refunds and disputes | `refund.created`, `refund.updated`, `dispute.created`, `dispute.updated` | |
-| Onboards sellers and splits payments | Connected accounts | `whop-platforms` |
+| Onboards sellers and splits payments | Subaccounts | `whop-platforms` |
 | Moves money between balances or to a bank | Transfers, payouts | `whop-payouts` |
 | Uses test-mode keys | The sandbox environment, separate keys and dashboard | `environment: WhopEnvironment.Sandbox` |
 | Pins an API version | `Api-Version-Date` header (the SDK sends it) | `whop-api` |

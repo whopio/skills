@@ -73,7 +73,7 @@ const webhook = await whop.webhooks.create({
 console.log(webhook.webhook_secret);
 ```
 
-`webhook_secret` is returned only once. Store it as `WHOP_WEBHOOK_SECRET` immediately. To receive events for an app's installs, or for connected accounts, see `resource_id` and `child_resource_events` in the [Webhooks API reference](https://docs.whop.com/api-reference/webhooks/webhook.md).
+`webhook_secret` is returned only once. Store it as `WHOP_WEBHOOK_SECRET` immediately. To receive events for an app's installs, or for subaccounts, see `resource_id` and `child_resource_events` in the [Webhooks API reference](https://docs.whop.com/api-reference/webhooks/webhook.md).
 
 ## With the Whop MCP server
 

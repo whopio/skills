@@ -99,7 +99,7 @@ console.log(preferences.preferred_settlement_currency_changeable_at);
 - It only affects new sales; money already in a balance stays in its currency.
 - Each converted sale costs 0.5%. Sales already in the chosen currency, App Store purchases, and sales that settle outside the Whop balance never convert. No 0.5% applies when the buyer paid in a currency other than the variant's (adaptive pricing already charged for it).
 - Refunds use the rate stored on the payment; disputes use the rate on the day the dispute opens.
-- On a platform, the setting applies only to the account that sets it. Application fees follow the platform's setting; the connected account's share follows the connected account's.
+- On a platform, the setting applies only to the account that sets it. Application fees follow the platform's setting; the subaccount's share follows the subaccount's.
 - On a payment, `total`, `subtotal`, `tax_amount`, `refunded_amount` and `amount_after_fees` are in the settlement currency (use them for balances and payouts). `presentment_total` and the other `presentment_*` fields are what the buyer paid; match orders on `presentment_total`.
 
 ## Swaps and cards

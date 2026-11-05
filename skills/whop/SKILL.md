@@ -53,7 +53,7 @@ The installed SDK is the source of truth for names on that version: `node_module
 | Run code when something happens: fulfill an order, grant or revoke access | `whop-webhooks` | `developer/guides/webhooks` |
 | Check access, cancel or pause subscriptions, refunds, invoices, disputes, fraud rules | `whop-billing` | `developer/guides/memberships` |
 | Pay people: transfers, payouts, payout portal, balances, deposits | `whop-payouts` | `developer/platforms/manual-payouts` |
-| Run a marketplace: connected accounts, seller onboarding, KYC, platform fees | `whop-platforms` | `developer/platforms/quickstart` |
+| Run a marketplace: subaccounts, seller onboarding, KYC, platform fees | `whop-platforms` | `developer/platforms/quickstart` |
 | Build an app that runs inside Whop: views, user tokens, permissions, OAuth | `whop-apps` | `developer/apps/overview` |
 | Chat, DMs, support chats, forums, courses in your own product | `whop-communities` | `developer/guides/chat/quickstart` |
 | Move from Stripe or another processor, or upgrade old Whop code | `whop-migrate` | `developer/api/migrate-from-previous-versions` |

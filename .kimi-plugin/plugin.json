@@ -1,7 +1,7 @@
 {
   "name": "whop-developer",
   "version": "0.4.0",
-  "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with connected accounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server.",
+  "description": "Build on Whop: checkout and payments, webhooks, memberships and billing, payouts, marketplaces with subaccounts, Whop apps, embedded chat and communities, and migrating from Stripe or older Whop APIs. Includes the Whop MCP server.",
   "author": {
     "name": "Whop",
     "url": "https://whop.com"
@@ -16,6 +16,7 @@
     "subscriptions",
     "payouts",
     "marketplace",
+    "subaccounts",
     "connected-accounts"
   ],
   "skills": "./skills/",
@@ -32,7 +33,7 @@
   "interface": {
     "displayName": "Whop Developer",
     "shortDescription": "Build payments, payouts, and apps on Whop",
-    "longDescription": "Skills that teach your agent to build on the current Whop API: checkout links and embedded checkout, verified webhooks, memberships and access checks, payouts and transfers, marketplaces with connected accounts and KYC, apps that run inside Whop, embedded chat, and migrations from Stripe or older Whop code.",
+    "longDescription": "Skills that teach your agent to build on the current Whop API: checkout links and embedded checkout, verified webhooks, memberships and access checks, payouts and transfers, marketplaces with subaccounts and KYC, apps that run inside Whop, embedded chat, and migrations from Stripe or older Whop code.",
     "developerName": "Whop",
     "websiteURL": "https://docs.whop.com/developer/start"
   }

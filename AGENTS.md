@@ -4,7 +4,7 @@ Instructions for any agent or person changing this repo. `CLAUDE.md` imports thi
 
 ## What this is
 
-Agent skills for **developers building on Whop**: taking payments, verifying webhooks, managing memberships, paying people out, running a marketplace with connected accounts, building Whop apps, embedding chat, and migrating to Whop. Each skill is a folder under `skills/` that follows the [Agent Skills specification](https://agentskills.io/specification.md).
+Agent skills for **developers building on Whop**: taking payments, verifying webhooks, managing memberships, paying people out, running a marketplace with subaccounts, building Whop apps, embedding chat, and migrating to Whop. Each skill is a folder under `skills/` that follows the [Agent Skills specification](https://agentskills.io/specification.md).
 
 Operating a live Whop business by hand ("refund this customer", "launch my store", "run ads") is **not** this repo's job. That lives in [`whopio/plugins`](https://github.com/whopio/plugins) and the `whop` CLI's own skill (`whop skills add`). Skills here hand off to those instead of duplicating them.
 
@@ -15,7 +15,7 @@ whop-checkout     take a payment: checkout links, Checkout element, Express Chec
 whop-billing      after the sale: memberships, access checks, cancellations, invoices, refunds, disputes, fraud
 whop-webhooks     receive and verify events, fulfill idempotently, retries, local testing
 whop-payouts      money out: payouts, payout portal, adding funds, transfers, ledgers, stats, Wallet element
-whop-platforms    marketplaces: connected accounts, onboarding, collecting for connected accounts, verification and RFIs, Dashboard element
+whop-platforms    marketplaces: subaccounts, onboarding, collecting for subaccounts, verification and RFIs, Dashboard element
 whop-apps         apps that run inside Whop: CLI, app views, user auth, permissions, installs, scheduled runs, notifications, OAuth, uploads
 whop-communities  chat and community: Chat and DMs elements, chat auth and user sync, channels, support chats, forums, courses
 whop-migrate      move to Whop from Stripe and others, or from older Whop API names

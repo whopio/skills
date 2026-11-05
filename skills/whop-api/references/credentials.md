@@ -4,7 +4,7 @@ Whop has five credential types. Pick by whose data you reach and where the code 
 
 ## API keys
 
-- **Account API key.** Authenticates your server as one account (`biz_`) and its connected accounts. Create it in the dashboard's Developer page under **Account API Keys** → **Create**. Name it for its use (`Local development`, `Production payments`). For a first call use the Admin role or the read permissions listed on [Retrieve Account](https://docs.whop.com/api-reference/beta/accounts/retrieve-account.md); for production switch to a custom permission set covering only the endpoints you call.
+- **Account API key.** Authenticates your server as one account (`biz_`) and its subaccounts. Create it in the dashboard's Developer page under **Account API Keys** → **Create**. Name it for its use (`Local development`, `Production payments`). For a first call use the Admin role or the read permissions listed on [Retrieve Account](https://docs.whop.com/api-reference/beta/accounts/retrieve-account.md); for production switch to a custom permission set covering only the endpoints you call.
 - **App API key.** Authenticates your app across every account that installed it. In the dashboard open **Apps** → **Create app**; the key is the hidden value after `WHOP_API_KEY` under **Environment variables**. Calls fail for accounts that haven't installed or authorized the app. App setup is `whop-apps`.
 - Both are secrets. Server only. Send as `Authorization: Bearer <key>`.
 - Sandbox keys come from `sandbox.whop.com/dashboard/developer` and only work against `https://sandbox-api.whop.com/api/v1` (SDK: `WhopEnvironment.Sandbox`).

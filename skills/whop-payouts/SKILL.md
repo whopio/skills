@@ -4,12 +4,12 @@ description: >-
   Move money out of Whop balances: transfers between balances, payouts to bank
   or PayPal, payout methods, the payout portal (Wallet element or hosted link),
   deposits, settlement currency, ledgers, balances and stats. Use when: "pay my
-  sellers", "send money to a connected account", "create a payout", "withdraw
-  to bank", "PayPal payouts", "embed a payout portal", "let users manage their
-  payouts", "top up my balance", "show balance and activity", "reconcile
-  payouts". NOT for: onboarding or KYC (whop-platforms), charging buyers
-  (whop-checkout), refunds (whop-billing), moving from Stripe Connect
-  (whop-migrate).
+  sellers", "send money to a subaccount", "send money to a connected account",
+  "create a payout", "withdraw to bank", "PayPal payouts", "embed a payout
+  portal", "let users manage their payouts", "top up my balance", "show balance
+  and activity", "reconcile payouts". NOT for: onboarding or KYC
+  (whop-platforms), charging buyers (whop-checkout), refunds (whop-billing),
+  moving from Stripe Connect (whop-migrate).
 license: Apache-2.0
 metadata:
   author: whop
@@ -18,7 +18,7 @@ metadata:
 
 # Whop Payouts
 
-Money leaves a Whop balance two ways: a **transfer** moves it to another Whop balance (a user or connected account), and a **payout** sends it from a balance to an external destination such as a bank account or PayPal.
+Money leaves a Whop balance two ways: a **transfer** moves it to another Whop balance (a user or subaccount), and a **payout** sends it from a balance to an external destination such as a bank account or PayPal.
 
 ## Before you start
 
@@ -26,7 +26,7 @@ Money leaves a Whop balance two ways: a **transfer** moves it to another Whop ba
 2. Fetch `https://docs.whop.com/developer/platforms/manual-payouts.md` and `https://docs.whop.com/developer/payouts/overview.md`. If they disagree with this skill, follow the docs and tell the user (see [references/skill-feedback.md](references/skill-feedback.md)). Read the changelog (`https://docs.whop.com/developer/api/versioning.md`) only when you pin or upgrade a version, or a response doesn't match this skill or the docs.
 3. Set up the client with `whop-api`. Without that skill: install `@whop/sdk` and create `new WhopClient({ token: process.env.WHOP_API_KEY, environment: WhopEnvironment.Sandbox })` in server-only code, dropping `environment` for production (`https://docs.whop.com/developer/quickstart.md`). Money calls use an **Account API key**, which is a secret: keep it on your server. Browsers get a short-lived access token instead (see [references/payout-portal.md](references/payout-portal.md)).
 4. Build and test against sandbox first: `https://sandbox-api.whop.com/api/v1`, or `environment: WhopEnvironment.Sandbox` on the client.
-5. Know who you are paying. A recipient needs a Whop account (a connected account or a user) before a transfer, and a completed verification plus a payout method before a payout. Creating and verifying connected accounts is `whop-platforms`.
+5. Know who you are paying. A recipient needs a Whop account (a subaccount or a user) before a transfer, and a completed verification plus a payout method before a payout. Creating and verifying subaccounts is `whop-platforms`.
 6. Other `whop-*` skills named here are optional. When one isn't installed, use the matching guide linked from `https://docs.whop.com/developer/start.md` instead.
 
 ## Rules
@@ -37,7 +37,7 @@ Money leaves a Whop balance two ways: a **transfer** moves it to another Whop ba
 4. **A key is bound to its request for 24 hours.** Same key and same body replays the original response (errors included, with `Idempotent-Replayed: true`). Same key with a different body is a `400` `idempotency_key_mismatch`. A retry while the first is still running is a `409` `idempotency_request_in_progress`.
 5. **Transfers are asynchronous.** A balance transfer can come back `processing` and settle to `succeeded` or `failed` within seconds. Listen for `transfer.completed` and `transfer.failed` (or retrieve the transfer); don't treat the create response as final.
 6. **Balances are per currency.** A payout draws only from the balance in its `currency`. Pass the currency the funds arrived in (`cad` for CAD funds); when omitted, Whop uses `usd` if it covers the payout, otherwise the only other funded currency.
-7. **Payout fees come out of the amount.** `amount` is the gross; the recipient gets `net_amount`. Get a quote first to show fees and arrival. Set `platform_covers_fees: true` to charge the fee to your platform instead; it only works for connected accounts of a platform whose fee policy covers that payout method, or a caller allowed to manage connected-account fees.
+7. **Payout fees come out of the amount.** `amount` is the gross; the recipient gets `net_amount`. Quote every payout first: it shows fees and arrival, and its `quote_token` is required to create the payout. Set `platform_covers_fees: true` to charge the fee to your platform instead; it only works for subaccounts of a platform whose fee policy covers that payout method, or a caller allowed to manage subaccount fees.
 8. **Use current names:** `transfers` (not top-ups or withdrawals), `payouts.create`, `deposits.create`, `account_id` with a `biz_` ID. `payout_method_id` is a `potk_` ID; a supported method type is a `podst_` ID.
 
 ## Pick a path
@@ -51,7 +51,7 @@ Money leaves a Whop balance two ways: a **transfer** moves it to another Whop ba
 | Fund your platform balance before paying out | [Add funds](#add-funds) |
 | A link anyone can redeem for money | `transfers.create` with `type: "claim_link"` |
 | Show balances, activity, revenue; reconcile; settle in one currency | [references/balances-and-reporting.md](references/balances-and-reporting.md) |
-| Create connected accounts, onboarding, KYC | `whop-platforms` |
+| Create subaccounts, onboarding, KYC | `whop-platforms` |
 
 ## Transfer between balances
 
@@ -121,7 +121,7 @@ console.log(payout.id, payout.status);
 
 - `amount: 100.0` is $100.00 gross; the fee comes out of it unless the platform covers it.
 - No payout method yet? Let the account add one in the Withdraw element or the hosted portal, or create one through the API ([references/payout-methods.md](references/payout-methods.md)).
-- Send `quote_token` whenever you have one: an account with quote enforcement on refuses a payout without it (`invalid_payout_quote`).
+- Always send `quote_token`, created with the same owner, method, amount, currency and speed. From API version `2026-11-03` it is required on every payout; before that (including `@whop/sdk` 2.7.0, which sends `2026-10-28`) only accounts with quote enforcement require it, so sending it always works on both. A missing, mismatched or expired quote returns `400` `invalid_payout_quote`. To retry an uncertain payout, resend the original `quote_token` and `Idempotency-Key`: the existing payout is recovered even after the quote expires.
 - Add `speed: "instant"` only when the method supports it; an ineligible instant payout is rejected.
 - Track it with the `payout.created`, `payout.updated` and `payout.reversed` webhooks (`whop-webhooks`) or `payouts.retrieve`. `status` is one of `requested`, `in_review`, `processing`, `completed`, `reversed`, `canceled`, `failed`, `denied`; `failure` explains the last four.
 - To cancel, check `cancelable` on the payout, then call `payouts.cancel({ id, account_id })`. `id` takes the `wdrl_` payout ID or the `cofr_` request ID that `payouts.create` returned.
@@ -130,7 +130,7 @@ console.log(payout.id, payout.status);
 
 Two options, both covered in [references/payout-portal.md](references/payout-portal.md):
 
-- **Embedded**: mount the Wallet elements (`BalanceElement`, `WithdrawElement`, `ActivityElement`) in your app with an access token your server mints for the connected account. `WithdrawElement` lists payout methods, collects a new one, and creates the payout when the user confirms.
+- **Embedded**: mount the Wallet elements (`BalanceElement`, `WithdrawElement`, `ActivityElement`) in your app with an access token your server mints for the subaccount. `WithdrawElement` lists payout methods, collects a new one, and creates the payout when the user confirms.
 - **Hosted**: create an account link with `use_case: "payouts_portal"` and redirect. It covers payouts, payout methods and identity verification.
 
 ```ts
@@ -148,7 +148,7 @@ const link = await whop.accountLinks.create({
 console.log(link.url);
 ```
 
-`account_id` is the connected account (or your own account) the user manages. Both URLs must start with `https://`. The only use cases are `payouts_portal` and `account_onboarding` (identity verification only, see `whop-platforms`).
+`account_id` is the subaccount (or your own account) the user manages. Both URLs must start with `https://`. The only use cases are `payouts_portal` and `account_onboarding` (identity verification only, see `whop-platforms`).
 
 ## Add funds
 
@@ -200,8 +200,8 @@ If the same call fails twice, stop retrying it. Read the whole error (status, bo
 | `400` `idempotency_key_mismatch` | Reused a key with a different body | New operation, new key |
 | `409` `idempotency_request_in_progress` | Retried while the first request runs | Wait, retry with the same key |
 | Payout refused for amount | More than the available balance in that currency | Check the balance for that `currency` before paying out |
-| `invalid_payout_quote` | Account requires a quote | Call `payouts.createQuote`, pass `quote_token` |
-| `platform_covers_fees` rejected | Not a connected account, or the fee policy doesn't cover the method | Omit it, or update the platform's covered payout fees |
+| `invalid_payout_quote` | No quote, a quote for different payout details, or an expired quote | Call `payouts.createQuote` with the same details and pass its `quote_token` |
+| `platform_covers_fees` rejected | Not a subaccount, or the fee policy doesn't cover the method | Omit it, or update the platform's covered payout fees |
 | Transfer `failed` | Origin unverified or short on balance, or destination can't receive | Fix the cause first; read `failure_reason` |
 | Transfer `403` | API key lacks `payout:transfer_funds` | Add the scope to the key |
 | Amount 100x too large | Sent cents | Send dollars: `50.0` is $50.00 |

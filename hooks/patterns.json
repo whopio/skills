@@ -86,7 +86,7 @@
       "id": "withdrawals-namespace",
       "literal": ["withdrawals.create"],
       "regex": "\\.withdrawals\\.(list|retrieve|create)\\(",
-      "fix": "Withdrawals are payouts: `client.payouts.create({ account_id, amount, payout_method_id })` with an `Idempotency-Key`. `/withdrawals` list and create return `410`.",
+      "fix": "Withdrawals are payouts: quote with `client.payouts.createQuote(...)`, then `client.payouts.create({ account_id, amount, payout_method_id, quote_token })` with an `Idempotency-Key`. `/withdrawals` list and create return `410`.",
       "skill": "whop-payouts"
     },
     {
