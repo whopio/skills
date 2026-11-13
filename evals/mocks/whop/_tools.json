@@ -2,7 +2,7 @@
   "tools": [
     {
       "name": "accounts_list",
-      "description": "Lists accounts visible to the credential. User tokens return the user's business accounts; Account API keys return the requesting account and its subaccounts.",
+      "description": "See the businesses you can act on. Call this first to get the `account_id` when the user names a business. A user token returns the user's businesses; an account API key returns that account and its subaccounts.",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
@@ -31,6 +31,10 @@
               "asc",
               "desc"
             ],
+            "type": "string"
+          },
+          "external_id": {
+            "description": "Return only the subaccount with this `external_id`, matched exactly and case-sensitively. End it with `%` to return every subaccount whose `external_id` starts with the text before it, such as `shopline:%`. `%` is accepted only at the end, because anywhere else it would scan all your subaccounts. `_` always matches literally.",
             "type": "string"
           },
           "first": {
@@ -124,7 +128,7 @@
     },
     {
       "name": "payments_get",
-      "description": "Returns one payment, including every purchased line item with its quantity and subtotal. Related records are ids — resolve a variant, membership, member or shipment on its own endpoint, and list this payment's refunds, disputes or Resolution Center cases with `?payment_id=`.",
+      "description": "Look up one payment, including every item bought with its quantity and subtotal. Related records come back as ids: look up the variant, membership, member or shipment with their own tools, and list this payment's refunds, disputes or resolution cases.",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
@@ -229,7 +233,7 @@
     },
     {
       "name": "products_list",
-      "description": "Lists an account's products, or searches the public marketplace when you omit `account_id`. Without the `access_pass:basic:read` permission on the account, including when signed out, the list holds only the products its store page lists.",
+      "description": "See the products (whops) a business sells. Leave out `account_id` to search the public Whop marketplace instead.",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
@@ -369,7 +373,7 @@
     },
     {
       "name": "variants_list",
-      "description": "Lists an account's variants, leaving out variants generated for a legacy invoice; retrieve one of those by ID. To list a product's public, buyable variants without authentication, omit `account_id` and pass `product_ids`.",
+      "description": "See the prices a product is sold at.",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
