@@ -56,9 +56,12 @@ rule.
 }
 ```
 
-3. **Confirm, then launch.** Show the user the campaign, the budget, and the
-   destination URL, and ask whether to launch. Only after a clear yes, call
-   `ad-campaigns_update` with `status: "active"`. Launching spends money.
+3. **Hand off launching.** Show the user the draft campaign, its budget, and the
+   destination URL. Campaign updates are not available on this MCP connection, so
+   send the user to their Whop dashboard to launch the draft themselves. Do not
+   substitute `ad-campaigns_unpause`: it resumes a paused campaign, not a draft.
+   After the user finishes, call `ad-campaigns_get` to verify the status. Launching
+   spends money.
 
 Pass exactly one of `ad_group` or `ad_group_id`. A nested `ad_campaign` object inside
 `ad_group` creates campaign + group + ad in one call — the API description
@@ -82,5 +85,6 @@ rejections.
 
 ## Sources
 
+- https://github.com/whopio/whop-mcp-server/tree/0cbf371ce3284065135fe6a1cdbb2241b6ce152a
 - https://docs.whop.com/developer/ai/connect.md
 - https://docs.whop.com/developer/guides/ai_and_mcp.md

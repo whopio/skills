@@ -29,7 +29,7 @@ whatever else the user has set up. No CLI is needed.
    the plugin's tools are missing, the user has not completed OAuth — tell them to
    run `/whop-developer:connect` (or `/mcp` in Claude Code and sign in to `whop`).
 2. **Discover, do not guess.** Tool names follow `<group>_<operation>`, with
-   hyphens inside multi-word groups (`payments_list`, `ad-campaigns_update`). Read
+   hyphens inside multi-word groups (`payments_list`, `ad-campaigns_get`). Read
    the tool's own schema before calling it. Never invent a tool name, a field, or an
    enum value — if you cannot find it, say so and ask.
 3. **Know the account.** `connection_status` returns `account_id`, and it is often
