@@ -475,6 +475,11 @@
             },
             "type": "array"
           },
+          "sku": {
+            "description": "Filter to only variants with this stock keeping unit. The match is on the full value and is not case-sensitive.",
+            "example": "TEE-LARGE-BLUE",
+            "type": "string"
+          },
           "visibilities": {
             "description": "Filter to only variants matching these visibility states.",
             "items": {
