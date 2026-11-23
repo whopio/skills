@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "@types/node": "26.6.6",
-    "@whop/sdk": "2.7.0",
+    "@whop/sdk": "2.8.1",
     "jose": "6.2.15",
     "typescript": "5.9.3"
   }
