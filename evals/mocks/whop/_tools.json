@@ -172,6 +172,14 @@
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
+          "destination_wallet": {
+            "description": "The buyer's Solana wallet address, for a crypto payment only. A crypto payment is refunded to the wallet it came from when that wallet is known. When it is not known, the refund is refused until you send this address. The refund then goes to this address as USDC on Solana and cannot be reversed. Not accepted for any other payment.",
+            "example": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "id": {
             "description": "The payment to refund, prefixed `pay_`.",
             "type": "string"
@@ -474,6 +482,11 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "sku": {
+            "description": "Filter to only variants with this stock keeping unit. The match is on the full value and is not case-sensitive.",
+            "example": "TEE-LARGE-BLUE",
+            "type": "string"
           },
           "visibilities": {
             "description": "Filter to only variants matching these visibility states.",
